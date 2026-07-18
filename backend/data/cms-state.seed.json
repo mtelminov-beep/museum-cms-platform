@@ -1,0 +1,58 @@
+{
+  "museum": {
+    "name": "Museum CMS",
+    "tagline": "Единая оболочка для музея, экранов и интерактивных панелей",
+    "theme": {
+      "accent": "#2f6f73",
+      "surface": "#f8f5ef",
+      "ink": "#202124"
+    }
+  },
+  "navigation": [
+    { "id": "home", "label": "Главная", "route": "/" },
+    { "id": "exhibitions", "label": "Экспозиции", "route": "/exhibitions" },
+    { "id": "media", "label": "Медиатека", "route": "/media" },
+    { "id": "events", "label": "Афиша", "route": "/events" }
+  ],
+  "exhibitions": [
+    {
+      "id": "demo-hall",
+      "title": "Демонстрационный зал",
+      "summary": "Шаблон раздела для будущей музейной экспозиции.",
+      "status": "draft",
+      "zones": ["intro", "timeline", "media-wall"]
+    }
+  ],
+  "screens": [
+    {
+      "id": "touch-main",
+      "name": "Тач-панель входной зоны",
+      "deviceType": "touch-panel",
+      "profile": "touch-65-landscape",
+      "route": "/display/touch-main",
+      "rotation": 0,
+      "kiosk": true
+    },
+    {
+      "id": "projection-hall",
+      "name": "Проекционный экран зала",
+      "deviceType": "projector",
+      "profile": "projection-16x9",
+      "route": "/display/projection-hall",
+      "rotation": 0,
+      "kiosk": false
+    }
+  ],
+  "playlists": [
+    {
+      "id": "welcome-loop",
+      "name": "Приветственный цикл",
+      "targetScreens": ["touch-main", "projection-hall"],
+      "items": [
+        { "type": "headline", "title": "Добро пожаловать", "duration": 12 },
+        { "type": "exhibition-card", "exhibitionId": "demo-hall", "duration": 18 }
+      ]
+    }
+  ]
+}
+
