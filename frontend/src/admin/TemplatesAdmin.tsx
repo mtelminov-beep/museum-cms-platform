@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { getCmsToken } from "../api";
 import { TEMPLATE_PRESETS, applyTemplateToDocument } from "../templates/presets";
 
@@ -64,7 +64,7 @@ export function TemplatesAdmin() {
                 "--accent": preset.tokens.accent,
                 "--surface": preset.tokens.surface,
                 "--ink": preset.tokens.ink
-              } as React.CSSProperties
+              } as CSSProperties
             }
           >
             <div className="template-card__preview" data-hero={preset.tokens.heroStyle}>

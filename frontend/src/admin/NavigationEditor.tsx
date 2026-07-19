@@ -31,6 +31,20 @@ export function NavigationEditor({
           <p className="hint">Видимость на публичном сайте, маршруты и подписи.</p>
         </div>
         <div className="admin-actions">
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() =>
+              onChange({
+                items: [
+                  { id: "home", label: "Главная", route: "/museum", published: true },
+                  ...navFromSiteStructure()
+                ]
+              })
+            }
+          >
+            Структура сайта
+          </button>
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => setAll(true)}>
             Показать все
           </button>

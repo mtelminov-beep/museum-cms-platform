@@ -47,10 +47,7 @@ const upload = multer({
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use("/uploads", express.static(UPLOADS_DIR));
-app.use("/uploads", express.static(path.join(MEDIA_ROOT, "uploads")));
-for (const folder of MEDIA_FOLDERS) {
-  app.use(`/${folder}`, express.static(path.join(MEDIA_ROOT, folder)));
-}
+app.use("/media", express.static(MEDIA_ROOT));
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "museum-cms-platform", time: new Date().toISOString() });

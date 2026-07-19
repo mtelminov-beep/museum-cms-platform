@@ -81,7 +81,7 @@ export async function saveUploadedMedia(file, folderRaw) {
   await fsp.rename(file.path, dest);
   const stat = await fsp.stat(dest);
   return {
-    url: `/${folder}/${fileName}`,
+    url: `/media/${folder}/${fileName}`,
     folder,
     fileName,
     size: stat.size,
@@ -101,7 +101,7 @@ export async function listMediaFolder(folderRaw) {
     const stat = await fsp.stat(full);
     if (!stat.isFile()) continue;
     items.push({
-      url: `/${folder}/${name}`,
+      url: `/media/${folder}/${name}`,
       folder,
       fileName: name,
       size: stat.size,

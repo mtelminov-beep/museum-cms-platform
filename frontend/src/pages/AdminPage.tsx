@@ -431,6 +431,8 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
           </>
         ) : null}
 
+        {tab === "templates" ? <TemplatesAdmin /> : null}
+
         {tab === "screens" && museumState ? <ScreensPage state={museumState} /> : null}
         {tab === "display" && museumState ? <DisplayPage state={museumState} /> : null}
         {tab === "android" ? <AndroidPage /> : null}
