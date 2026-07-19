@@ -8,6 +8,8 @@ dist/
 backend/data/runtime-state.json
 backend/data/uploads/*
 !backend/data/uploads/.gitkeep
+.git/museum-cms-autosync.lock
+.git/museum-cms-autosync.stamp
 frontend/android/
 frontend/.gradle/
 frontend/app/

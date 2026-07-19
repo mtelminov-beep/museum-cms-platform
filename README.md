@@ -30,6 +30,16 @@ npm run dev
 
 Content (welcome, navigation, sections, pages with block constructor, materials) is edited in `/admin` and stored as CMS catalogs.
 
+## Синхронизация с GitHub
+
+Изменения уходят на GitHub автоматически (сообщения коммитов на русском):
+
+- после правок агента Cursor (хуки `.cursor/hooks.json`);
+- в режиме реального времени: `npm run sync:watch`;
+- вручную: `npm run sync`.
+
+Отключить автосинк: `MUSEUM_CMS_AUTOSYNC=0`.
+
 ## Build
 
 ```bash

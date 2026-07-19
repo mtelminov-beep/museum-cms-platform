@@ -1,0 +1,14 @@
+---
+description: Автосинхронизация с GitHub и русские сообщения коммитов
+alwaysApply: true
+---
+
+# GitHub sync (museum-cms-platform)
+
+- После существенных изменений всегда синхронизируй репозиторий с GitHub (`git push`), если пользователь не запретил это явно.
+- Сообщения коммитов и описания PR — **только на русском языке**.
+- Формат сообщения: краткий заголовок по делу, например: `Добавлен визуальный конструктор страниц` или `Исправлена авторизация админки`.
+- Не коммить `.env`, `backend/data/runtime-state.json`, содержимое `backend/data/uploads/` (кроме `.gitkeep`).
+- Для автосинка можно вызывать: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync-to-github.ps1 -Reason manual -Force`
+- Отключить автосинк: переменная окружения `MUSEUM_CMS_AUTOSYNC=0`.
+- Для режима реального времени вне агента: `npm run sync:watch`.
