@@ -416,6 +416,18 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
           </>
         ) : null}
 
+        {tab === "entities" ? (
+          <>
+            <header className="admin-main__head">
+              <div>
+                <h1>Модель контента MuseumOS</h1>
+                <p className="hint">Выставки, экспонаты, залы, QR и устройства — одна запись, несколько каналов.</p>
+              </div>
+            </header>
+            <EntityCollectionEditor collection={entityCollection} />
+          </>
+        ) : null}
+
         {tab === "screens" && museumState ? <ScreensPage state={museumState} /> : null}
         {tab === "display" && museumState ? <DisplayPage state={museumState} /> : null}
         {tab === "android" ? <AndroidPage /> : null}

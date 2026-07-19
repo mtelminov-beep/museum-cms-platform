@@ -44,7 +44,12 @@ export async function adminLogin(login: string, password: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ login, password })
   });
-  return parseJson<{ ok: boolean; token: string; admin: { login: string } }>(res);
+  return parseJson<{
+    ok: boolean;
+    token: string;
+    admin: { login: string; role?: string; id?: string; displayName?: string };
+    permissions?: string[];
+  }>(res);
 }
 
 export async function fetchCatalog<T = unknown>(key: CmsCatalogKey): Promise<CatalogEntry<T>> {
