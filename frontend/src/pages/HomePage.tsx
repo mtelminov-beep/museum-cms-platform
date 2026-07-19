@@ -15,9 +15,13 @@ export function HomePage() {
       <main className="home-page">
         <section
           className="home-hero"
-          style={home.heroImage ? { backgroundImage: `linear-gradient(rgba(0,0,0,.4), rgba(0,0,0,.5)), url(${home.heroImage})` } : undefined}
+          style={
+            home.heroImage
+              ? { backgroundImage: `linear-gradient(rgba(0,0,0,.4), rgba(0,0,0,.5)), url(${home.heroImage})` }
+              : undefined
+          }
         >
-          <div className="home-hero__inner">
+          <div className="home-hero__panel home-hero__inner">
             <span className="eyebrow">{home.heroBadge}</span>
             <small>{home.heroHall}</small>
             <h1>{home.heroTitle}</h1>
@@ -31,6 +35,7 @@ export function HomePage() {
               </Link>
             </div>
           </div>
+          <div className="home-hero__aside" aria-hidden="true" />
         </section>
 
         <section className="home-menu">

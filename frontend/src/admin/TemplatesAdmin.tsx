@@ -1,10 +1,11 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { getCmsToken } from "../api";
-import { TEMPLATE_PRESETS, applyTemplateToDocument } from "../templates/presets";
+import { applyTemplateFully } from "../templates/applyTemplate";
+import { applyTemplateToDocument, TEMPLATE_PRESETS } from "../templates/presets";
 
 export function TemplatesAdmin() {
   const [activeId, setActiveId] = useState(localStorage.getItem("museum-cms-template") || "shihm-cultural-route");
   const [status, setStatus] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     const preset = TEMPLATE_PRESETS.find((p) => p.id === activeId) || TEMPLATE_PRESETS[0];
@@ -13,38 +14,18 @@ export function TemplatesAdmin() {
 
   const apply = async (id: string) => {
     const preset = TEMPLATE_PRESETS.find((p) => p.id === id);
-    if (!preset) return;
+    if (!preset || busy) return;
+    setBusy(true);
     setActiveId(id);
-    localStorage.setItem("museum-cms-template", id);
-    applyTemplateToDocument(preset);
     try {
-      const currentRes = await fetch("/api/cms/state");
-      const current = currentRes.ok ? await currentRes.json() : {};
-      const res = await fetch("/api/cms/state", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CMS-Token": getCmsToken()
-        },
-        body: JSON.stringify({
-          museum: {
-            ...(current.museum || {}),
-            theme: {
-              accent: preset.tokens.accent,
-              surface: preset.tokens.surface,
-              ink: preset.tokens.ink
-            }
-          },
-          settings: {
-            ...(current.settings || {}),
-            activeTemplateId: preset.id
-          }
-        })
-      });
-      if (!res.ok) throw new Error(await res.text());
-      setStatus(`Применён шаблон «${preset.name}»`);
+      await applyTemplateFully(preset);
+      setStatus(
+        `Применён шаблон «${preset.name}»: шрифты, меню, представление и разделы по умолчанию.`
+      );
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : "Ошибка сохранения темы");
+      setStatus(err instanceof Error ? err.message : "Ошибка применения шаблона");
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -54,7 +35,8 @@ export function TemplatesAdmin() {
         <div>
           <h1>Стилистические шаблоны</h1>
           <p className="hint">
-            Пресеты оформления сайта. Контент не удаляется при смене темы. {status}
+            Полный пакет оформления: цвета, шрифты, стиль меню и главной. Меню и страницы —
+            канонические разделы сайта; уже заполненный контент не удаляется. {status}
           </p>
         </div>
       </header>
@@ -67,18 +49,26 @@ export function TemplatesAdmin() {
               {
                 "--accent": preset.tokens.accent,
                 "--surface": preset.tokens.surface,
-                "--ink": preset.tokens.ink
+                "--ink": preset.tokens.ink,
+                "--font-display": preset.tokens.fontDisplay
               } as CSSProperties
             }
           >
-            <div className="template-card__preview" data-hero={preset.tokens.heroStyle}>
-              <span>{preset.name}</span>
+            <div
+              className="template-card__preview"
+              data-hero={preset.tokens.heroStyle}
+              data-menu={preset.tokens.menuStyle}
+            >
+              <span style={{ fontFamily: preset.tokens.fontDisplay }}>{preset.name}</span>
             </div>
-            <h3>{preset.name}</h3>
+            <h3 style={{ fontFamily: preset.tokens.fontDisplay }}>{preset.name}</h3>
             <p>{preset.description}</p>
-            <small>{preset.id}</small>
-            <button type="button" className="btn" onClick={() => void apply(preset.id)}>
-              {activeId === preset.id ? "Активен" : "Применить"}
+            <small>
+              меню: {preset.tokens.menuStyle} · hero: {preset.tokens.heroStyle} ·{" "}
+              {preset.tokens.fontDisplay.split(",")[0].replace(/"/g, "")}
+            </small>
+            <button type="button" className="btn" disabled={busy} onClick={() => void apply(preset.id)}>
+              {busy && activeId === preset.id ? "Применяем…" : activeId === preset.id ? "Активен" : "Применить"}
             </button>
           </article>
         ))}

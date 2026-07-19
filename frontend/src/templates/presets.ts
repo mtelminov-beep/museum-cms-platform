@@ -69,7 +69,7 @@ export const TEMPLATE_PRESETS: TemplatePreset[] = [
       ink: "#134e4a",
       panel: "#0f3d3a",
       muted: "#5b7c78",
-      gold: "#f0c generosa",
+      gold: "#f0d78c",
       fontDisplay: '"Manrope", "Segoe UI", sans-serif',
       fontBody: '"Manrope", "Segoe UI", sans-serif',
       fontQuery: "Manrope:wght@400;500;600;700;800",

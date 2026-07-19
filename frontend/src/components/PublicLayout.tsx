@@ -14,7 +14,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         <Link to="/" className="public-brand">
           Museum CMS
         </Link>
-        <nav>
+        <nav className="public-nav" aria-label="Основное меню">
           {items.map((item) => (
             <NavLink key={item.id} to={item.route} className={({ isActive }) => (isActive ? "active" : undefined)}>
               {item.label}

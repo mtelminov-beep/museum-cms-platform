@@ -31,6 +31,15 @@ export interface MuseumTheme {
   accent: string;
   surface: string;
   ink: string;
+  panel?: string;
+  muted?: string;
+  gold?: string;
+  fontDisplay?: string;
+  fontBody?: string;
+  radius?: string;
+  heroStyle?: string;
+  menuStyle?: string;
+  tileStyle?: string;
 }
 
 export interface LayoutBox {
