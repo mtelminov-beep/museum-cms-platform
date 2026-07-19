@@ -14,14 +14,50 @@ async function loadSeed() {
 }
 
 function normalizeState(state, seed) {
+  const entityKeys = [
+    "branches",
+    "halls",
+    "exhibitions",
+    "exhibits",
+    "persons",
+    "events",
+    "articles",
+    "routes",
+    "mediaAssets",
+    "qrCodes",
+    "devices",
+    "playlists",
+    "scenes",
+    "assignments"
+  ];
+  const seedEntities = seed.entities || {};
+  const stateEntities = state.entities || {};
+  const entities = {};
+  for (const key of entityKeys) {
+    entities[key] = Array.isArray(stateEntities[key])
+      ? stateEntities[key]
+      : Array.isArray(seedEntities[key])
+        ? seedEntities[key]
+        : [];
+  }
+
   const next = {
     ...seed,
     ...state,
+    tenant: { ...(seed.tenant || {}), ...(state.tenant || {}) },
     museum: { ...seed.museum, ...(state.museum || {}) },
     settings: { ...seed.settings, ...(state.settings || {}) },
+    users: Array.isArray(state.users) ? state.users : seed.users || [],
+    entities,
+    auditLog: Array.isArray(state.auditLog) ? state.auditLog : seed.auditLog || [],
+    pageRevisions: { ...(seed.pageRevisions || {}), ...(state.pageRevisions || {}) },
     kioskCatalogs: { ...(seed.kioskCatalogs || {}), ...(state.kioskCatalogs || {}) },
     screens: Array.isArray(state.screens) ? state.screens : seed.screens,
-    playlists: Array.isArray(state.playlists) ? state.playlists : seed.playlists
+    playlists: Array.isArray(state.playlists)
+      ? state.playlists
+      : entities.playlists?.length
+        ? entities.playlists
+        : seed.playlists
   };
 
   for (const key of CMS_CATALOG_KEYS) {
