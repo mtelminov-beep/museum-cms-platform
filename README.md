@@ -23,8 +23,12 @@ npm install
 npm run dev
 ```
 
-Frontend: `http://localhost:5173`
-Backend: `http://localhost:8787`
+- Public start screen: `http://localhost:5173/`
+- Museum menu: `http://localhost:5173/museum`
+- Admin panel: `http://localhost:5173/admin` (login `admin` / `admin`)
+- Backend API: `http://localhost:8787`
+
+Content (welcome, navigation, sections, pages with block constructor, materials) is edited in `/admin` and stored as CMS catalogs.
 
 ## Build
 

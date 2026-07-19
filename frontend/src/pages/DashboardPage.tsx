@@ -1,7 +1,8 @@
 import type { MuseumState } from "../types";
 
 export function DashboardPage({ state }: { state: MuseumState }) {
-  const published = state.exhibitions.filter((item) => item.status === "published").length;
+  const exhibitions = state.exhibitions ?? [];
+  const published = exhibitions.filter((item) => item.status === "published").length;
   return (
     <section className="page-grid">
       <header className="page-header">
@@ -11,7 +12,7 @@ export function DashboardPage({ state }: { state: MuseumState }) {
       <div className="metric-row">
         <article>
           <span>Экспозиции</span>
-          <strong>{state.exhibitions.length}</strong>
+          <strong>{exhibitions.length}</strong>
           <small>{published} опубликовано</small>
         </article>
         <article>

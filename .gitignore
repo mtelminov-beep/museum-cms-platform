@@ -6,6 +6,8 @@ dist/
 *.log
 *.tsbuildinfo
 backend/data/runtime-state.json
+backend/data/uploads/*
+!backend/data/uploads/.gitkeep
 frontend/android/
 frontend/.gradle/
 frontend/app/

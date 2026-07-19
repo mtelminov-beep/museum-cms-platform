@@ -8,21 +8,145 @@
       "ink": "#202124"
     }
   },
-  "navigation": [
-    { "id": "home", "label": "Главная", "route": "/" },
-    { "id": "exhibitions", "label": "Экспозиции", "route": "/exhibitions" },
-    { "id": "media", "label": "Медиатека", "route": "/media" },
-    { "id": "events", "label": "Афиша", "route": "/events" }
-  ],
-  "exhibitions": [
-    {
-      "id": "demo-hall",
-      "title": "Демонстрационный зал",
-      "summary": "Шаблон раздела для будущей музейной экспозиции.",
-      "status": "draft",
-      "zones": ["intro", "timeline", "media-wall"]
+  "settings": {
+    "defaultLocale": "ru",
+    "kioskMode": false
+  },
+  "kioskCatalogs": {
+    "cms-welcome-v1": {
+      "payload": {
+        "institutionName": "Museum CMS",
+        "location": "Ваш город",
+        "kicker": "Цифровой гид",
+        "title": "Добро пожаловать",
+        "titleAccent": "в музей",
+        "lead": "Коснитесь экрана, чтобы начать знакомство с экспозицией.",
+        "backgroundImage": "",
+        "buttonLabel": "Начать",
+        "buttonHint": "Открыть меню",
+        "footerLeft": "Museum CMS Platform",
+        "footerRight": "",
+        "layout": {
+          "header": { "x": 8, "y": 8, "width": 84, "scale": 1 },
+          "content": { "x": 8, "y": 28, "width": 70, "scale": 1 },
+          "button": { "x": 8, "y": 68, "width": 40, "scale": 1 },
+          "footer": { "x": 8, "y": 88, "width": 84, "scale": 1 }
+        }
+      },
+      "updatedAt": "2026-07-19T00:00:00.000Z"
+    },
+    "cms-home-v1": {
+      "payload": {
+        "pageTitle": "Главное меню",
+        "pageSubtitle": "Выберите раздел",
+        "heroBadge": "Музей",
+        "heroHall": "Входная зона",
+        "heroTitle": "Исследуйте коллекции",
+        "heroDescription": "Разделы, страницы и материалы управляются из админ-панели.",
+        "heroImage": "",
+        "heroPrimaryCta": { "label": "Разделы", "route": "/museum" },
+        "heroSecondaryCta": { "label": "О музее", "route": "/page/about" },
+        "tiles": [
+          {
+            "id": "tile-sections",
+            "title": "Разделы",
+            "subtitle": "Экспозиции и темы",
+            "image": "",
+            "route": "/section/demo-section",
+            "published": true
+          },
+          {
+            "id": "tile-about",
+            "title": "О музее",
+            "subtitle": "Страница с блоками",
+            "image": "",
+            "route": "/page/about",
+            "published": true
+          }
+        ]
+      },
+      "updatedAt": "2026-07-19T00:00:00.000Z"
+    },
+    "cms-navigation-v1": {
+      "payload": {
+        "items": [
+          { "id": "home", "label": "Главная", "route": "/museum", "published": true },
+          { "id": "sections", "label": "Разделы", "route": "/section/demo-section", "published": true },
+          { "id": "about", "label": "О музее", "route": "/page/about", "published": true },
+          { "id": "materials", "label": "Материалы", "route": "/materials", "published": true }
+        ]
+      },
+      "updatedAt": "2026-07-19T00:00:00.000Z"
+    },
+    "cms-sections-v1": {
+      "payload": [
+        {
+          "id": "demo-section",
+          "title": "Демонстрационный раздел",
+          "summary": "Шаблон раздела с привязанными страницами.",
+          "image": "",
+          "status": "published",
+          "pageIds": ["about", "demo-page"]
+        }
+      ],
+      "updatedAt": "2026-07-19T00:00:00.000Z"
+    },
+    "cms-pages-v1": {
+      "payload": [
+        {
+          "id": "about",
+          "slug": "about",
+          "title": "О музее",
+          "status": "published",
+          "summary": "Пример страницы, собранной из блоков.",
+          "blocks": [
+            {
+              "id": "block-intro",
+              "type": "text",
+              "title": "Введение",
+              "text": "<p>Это страница, созданная в визуальном конструкторе. Добавляйте текст, изображения, видео и аудио.</p>"
+            },
+            {
+              "id": "block-note",
+              "type": "text",
+              "title": "Как редактировать",
+              "text": "<p>Откройте <strong>/admin</strong>, войдите как admin / admin и отредактируйте каталог «Страницы».</p>"
+            }
+          ]
+        },
+        {
+          "id": "demo-page",
+          "slug": "demo-page",
+          "title": "Демо-страница",
+          "status": "published",
+          "summary": "Вторая страница раздела.",
+          "blocks": [
+            {
+              "id": "block-demo",
+              "type": "text",
+              "title": "Контент",
+              "text": "<p>Создайте новые блоки в админ-панели.</p>"
+            }
+          ]
+        }
+      ],
+      "updatedAt": "2026-07-19T00:00:00.000Z"
+    },
+    "cms-materials-v1": {
+      "payload": [
+        {
+          "id": "mat-guide",
+          "title": "Путеводитель",
+          "annotation": "Краткий обзор экспозиции для посетителей.",
+          "status": "published",
+          "category": "документы",
+          "fileUrl": "",
+          "coverImage": ""
+        }
+      ],
+      "updatedAt": "2026-07-19T00:00:00.000Z"
     }
-  ],
+  },
   "screens": [
     {
       "id": "touch-main",
@@ -55,4 +179,3 @@
     }
   ]
 }
-

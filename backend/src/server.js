@@ -1,24 +1,52 @@
 import express from "express";
 import cors from "cors";
 import multer from "multer";
+import fs from "node:fs";
+import fsp from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { patchState, readState, writeState } from "./store.js";
+import { handleAdminLogin } from "./auth.js";
+import { CMS_CATALOG_KEYS, isCmsCatalogKey } from "./catalogKeys.js";
+import { cmsGate } from "./cmsSecurity.js";
+import {
+  getCatalog,
+  listCatalogs,
+  patchState,
+  putCatalog,
+  readState,
+  writeState
+} from "./store.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const FRONTEND_DIST = path.join(PROJECT_ROOT, "frontend", "dist");
+const UPLOADS_DIR = path.join(PROJECT_ROOT, "backend", "data", "uploads");
 
 const app = express();
-const upload = multer({ dest: path.join(PROJECT_ROOT, "backend", "data", "uploads") });
 const PORT = Number(process.env.PORT || 8787);
+
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+  filename: (_req, file, cb) => {
+    const safe = String(file.originalname || "file")
+      .replace(/[^\w.\-]+/g, "_")
+      .slice(0, 80);
+    cb(null, `${Date.now()}-${safe}`);
+  }
+});
+const upload = multer({ storage, limits: { fileSize: 40 * 1024 * 1024 } });
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "museum-cms-platform", time: new Date().toISOString() });
 });
+
+app.post("/api/auth/admin-login", handleAdminLogin);
 
 app.get("/api/cms/state", async (req, res, next) => {
   try {
@@ -28,7 +56,7 @@ app.get("/api/cms/state", async (req, res, next) => {
   }
 });
 
-app.put("/api/cms/state", async (req, res, next) => {
+app.put("/api/cms/state", cmsGate, async (req, res, next) => {
   try {
     res.json(await writeState(req.body));
   } catch (error) {
@@ -36,7 +64,7 @@ app.put("/api/cms/state", async (req, res, next) => {
   }
 });
 
-app.patch("/api/cms/state", async (req, res, next) => {
+app.patch("/api/cms/state", cmsGate, async (req, res, next) => {
   try {
     res.json(await patchState(req.body));
   } catch (error) {
@@ -44,18 +72,80 @@ app.patch("/api/cms/state", async (req, res, next) => {
   }
 });
 
-app.post("/api/cms/media", upload.single("file"), async (req, res) => {
+app.get("/api/cms/catalogs", async (req, res, next) => {
+  try {
+    res.json({ keys: CMS_CATALOG_KEYS, items: await listCatalogs() });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/cms/catalogs/:key", async (req, res, next) => {
+  try {
+    const key = req.params.key;
+    if (!isCmsCatalogKey(key)) {
+      res.status(404).json({ error: "Unknown catalog key", key });
+      return;
+    }
+    res.json(await getCatalog(key));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put("/api/cms/catalogs/:key", cmsGate, async (req, res, next) => {
+  try {
+    const key = req.params.key;
+    if (!isCmsCatalogKey(key)) {
+      res.status(404).json({ error: "Unknown catalog key", key });
+      return;
+    }
+    const body = req.body && typeof req.body === "object" ? req.body : {};
+    if (!("payload" in body)) {
+      res.status(400).json({ error: "payload required" });
+      return;
+    }
+    const serialized = JSON.stringify(body.payload);
+    if (serialized.length > 4_000_000) {
+      res.status(413).json({ error: "Payload too large" });
+      return;
+    }
+    res.json(await putCatalog(key, body.payload));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/cms/media", cmsGate, upload.single("file"), async (req, res) => {
+  if (!req.file) {
+    res.status(400).json({ error: "file required" });
+    return;
+  }
+  const url = `/uploads/${req.file.filename}`;
   res.status(201).json({
-    id: req.file?.filename,
-    originalName: req.file?.originalname,
-    size: req.file?.size,
-    message: "Media received. Connect object storage or a museum media server for production."
+    id: req.file.filename,
+    originalName: req.file.originalname,
+    size: req.file.size,
+    mimeType: req.file.mimetype,
+    url
   });
 });
 
 app.use(express.static(FRONTEND_DIST, { index: false }));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(FRONTEND_DIST, "index.html"));
+app.get("*", async (req, res, next) => {
+  if (req.path.startsWith("/api/") || req.path.startsWith("/uploads/")) {
+    next();
+    return;
+  }
+  try {
+    await fsp.access(path.join(FRONTEND_DIST, "index.html"));
+    res.sendFile(path.join(FRONTEND_DIST, "index.html"));
+  } catch {
+    res.status(404).json({
+      error: "Frontend build not found",
+      hint: "Use Vite dev server in development, or run npm run build"
+    });
+  }
 });
 
 app.use((error, req, res, next) => {
@@ -66,4 +156,3 @@ app.use((error, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Museum CMS backend listening on :${PORT}`);
 });
-

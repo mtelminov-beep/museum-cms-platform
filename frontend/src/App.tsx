@@ -1,37 +1,36 @@
-import { useEffect, useState } from "react";
-import { fetchCmsState } from "./api";
-import { Shell } from "./components/Shell";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { applyKioskEnvironment } from "./device/kiosk";
-import { AndroidPage } from "./pages/AndroidPage";
-import { DashboardPage } from "./pages/DashboardPage";
+import { AdminPage } from "./pages/AdminPage";
+import { ContentPage } from "./pages/ContentPage";
 import { DisplayPage } from "./pages/DisplayPage";
-import { ScreensPage } from "./pages/ScreensPage";
-import type { MuseumState } from "./types";
+import { HomePage } from "./pages/HomePage";
+import { MaterialsPage } from "./pages/MaterialsPage";
+import { SectionPage } from "./pages/SectionPage";
+import { StartPage } from "./pages/StartPage";
+import { CatalogProvider } from "./stores/CatalogContext";
+import { useEffect } from "react";
 import "./styles.css";
 
 export default function App() {
-  const [state, setState] = useState<MuseumState | null>(null);
-  const [activeView, setActiveView] = useState("cms");
-
   useEffect(() => {
     applyKioskEnvironment();
-    fetchCmsState().then(setState).catch(console.error);
   }, []);
 
-  if (!state) {
-    return <main className="loading">Загрузка CMS...</main>;
-  }
-
   return (
-    <main className="app-shell">
-      <Shell state={state} activeView={activeView} onViewChange={setActiveView} />
-      <div className="content">
-        {activeView === "cms" && <DashboardPage state={state} />}
-        {activeView === "screens" && <ScreensPage state={state} />}
-        {activeView === "display" && <DisplayPage state={state} />}
-        {activeView === "android" && <AndroidPage />}
-      </div>
-    </main>
+    <BrowserRouter>
+      <CatalogProvider>
+        <Routes>
+          <Route path="/" element={<StartPage />} />
+          <Route path="/museum" element={<HomePage />} />
+          <Route path="/section/:id" element={<SectionPage />} />
+          <Route path="/page/:id" element={<ContentPage />} />
+          <Route path="/materials" element={<MaterialsPage />} />
+          <Route path="/display/:screenId" element={<DisplayPage />} />
+          <Route path="/display" element={<DisplayPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </CatalogProvider>
+    </BrowserRouter>
   );
 }
-
