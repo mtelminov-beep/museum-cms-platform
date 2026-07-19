@@ -73,6 +73,8 @@ function AdminLoginForm({ onSuccess }: { onSuccess: () => void }) {
             const result = await adminLogin(login, password);
             setCmsToken(result.token);
             setAdminSession(result.admin.login);
+            sessionStorage.setItem("museum-cms-role", result.admin.role || "admin");
+            sessionStorage.setItem("museum-cms-actor", result.admin.login || "admin");
             onSuccess();
           } catch {
             setError("Неверный логин или пароль");
@@ -178,6 +180,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const { refresh } = useCatalogs();
   const [tab, setTab] = useState<AdminTab>("content");
   const [section, setSection] = useState<CmsCatalogKey>("cms-welcome-v1");
+  const [entityCollection, setEntityCollection] = useState<EntityCollection>("exhibitions");
   const [draft, setDraft] = useState<unknown>(catalogDefaults["cms-welcome-v1"]);
   const [jsonText, setJsonText] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
@@ -282,7 +285,8 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         <nav className="admin-tabs">
           {(
             [
-              ["content", "Контент"],
+              ["content", "Страницы"],
+              ["entities", "Контент"],
               ["screens", "Носители"],
               ["display", "Display"],
               ["android", "Android"]
@@ -304,6 +308,21 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 onClick={() => setSection(key)}
               >
                 {sectionLabels[key]}
+              </button>
+            ))}
+          </nav>
+        ) : null}
+
+        {tab === "entities" ? (
+          <nav className="admin-sections">
+            {ENTITY_NAV.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={entityCollection === item.id ? "active" : ""}
+                onClick={() => setEntityCollection(item.id)}
+              >
+                {item.label}
               </button>
             ))}
           </nav>
