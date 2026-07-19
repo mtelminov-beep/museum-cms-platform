@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { pagesFromSiteStructure, SITE_SECTIONS } from "../site/structure";
 import type { CmsPage } from "../types";
 import { TildaPageEditor } from "./TildaPageEditor";
 
-function mergeSitePages(existing: CmsPage[]): CmsPage[] {
+export function mergeSitePages(existing: CmsPage[]): CmsPage[] {
   const seeded = pagesFromSiteStructure() as CmsPage[];
-  const byId = new Map(existing.map((p) => [p.id, p]));
+  const byId = new Map((existing || []).map((p) => [p.id, p]));
   for (const page of seeded) {
     if (!byId.has(page.id)) byId.set(page.id, page);
   }
@@ -35,18 +35,6 @@ export function SiteBuilderAdmin({
   const [selectedId, setSelectedId] = useState(SITE_SECTIONS[0]?.id || list[0]?.id);
   const selected = list.find((p) => p.id === selectedId) ?? list[0] ?? null;
   const sectionMeta = SITE_SECTIONS.find((s) => s.id === selected?.id);
-  const seededRef = useRef(false);
-
-  useEffect(() => {
-    if (seededRef.current) return;
-    const missing = SITE_SECTIONS.some((s) => !pages?.some((p) => p.id === s.id));
-    if (missing || !pages?.length) {
-      seededRef.current = true;
-      onChange(mergeSitePages(Array.isArray(pages) ? pages : []));
-    } else {
-      seededRef.current = true;
-    }
-  }, [pages, onChange]);
 
   useEffect(() => {
     if (!list.some((p) => p.id === selectedId) && list[0]) {

@@ -8,7 +8,7 @@ import {
 import { ENTITY_NAV, EntityCollectionEditor, type EntityCollection } from "../admin/EntityCollectionEditor";
 import { HomeEditor } from "../admin/HomeEditor";
 import { NavigationEditor } from "../admin/NavigationEditor";
-import { SiteBuilderAdmin } from "../admin/SiteBuilderAdmin";
+import { mergeSitePages, SiteBuilderAdmin } from "../admin/SiteBuilderAdmin";
 import { TemplatesAdmin } from "../admin/TemplatesAdmin";
 import { PagesCatalogEditor } from "../admin/VisualPageEditor";
 import { WelcomeEditor } from "../admin/WelcomeEditor";
@@ -186,7 +186,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [entityCollection, setEntityCollection] = useState<EntityCollection>("exhibitions");
   const [pagesDraft, setPagesDraft] = useState<CmsPage[]>(() => {
     const local = loadDraft("cms-pages-v1");
-    return (local as CmsPage[]) || (catalogDefaults["cms-pages-v1"] as CmsPage[]);
+    return mergeSitePages((local as CmsPage[]) || (catalogDefaults["cms-pages-v1"] as CmsPage[]));
   });
   const [draft, setDraft] = useState<unknown>(catalogDefaults["cms-pages-v1"]);
   const [jsonText, setJsonText] = useState("");
