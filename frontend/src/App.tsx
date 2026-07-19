@@ -10,16 +10,14 @@ import { SectionPage } from "./pages/SectionPage";
 import { ExhibitsListPage, PosterHubPage, QrScannerPage } from "./pages/SiteSectionPages";
 import { StartPage } from "./pages/StartPage";
 import { CatalogProvider } from "./stores/CatalogContext";
-import { applyTemplateToDocument, TEMPLATE_PRESETS } from "./templates/presets";
+import { applyTemplateToDocument, getTemplateById } from "./templates/presets";
 import { useEffect } from "react";
 import "./styles.css";
 
 export default function App() {
   useEffect(() => {
     applyKioskEnvironment();
-    const id = localStorage.getItem("museum-cms-template") || "shihm-cultural-route";
-    const preset = TEMPLATE_PRESETS.find((p) => p.id === id) || TEMPLATE_PRESETS[0];
-    applyTemplateToDocument(preset);
+    applyTemplateToDocument(getTemplateById(localStorage.getItem("museum-cms-template")));
   }, []);
 
   return (

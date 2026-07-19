@@ -1652,6 +1652,14 @@ html[data-template="science-split"] .btn {
     grid-template-columns: 1fr;
   }
 
+  html[data-hero-style="split"] .home-hero {
+    grid-template-columns: 1fr;
+  }
+
+  html[data-tile-style="rows"] .home-tile {
+    grid-template-columns: 1fr;
+  }
+
   .public-header {
     flex-direction: column;
     align-items: flex-start;

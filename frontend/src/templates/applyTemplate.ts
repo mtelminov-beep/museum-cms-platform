@@ -23,9 +23,9 @@ export function buildTemplateNavigation(): NavigationConfig {
 }
 
 export function mergeTemplatePages(existing: CmsPage[] | null | undefined): CmsPage[] {
-  const skeletons = pagesFromSiteStructure();
+  const skeletons = pagesFromSiteStructure() as CmsPage[];
   const byId = new Map((existing || []).map((p) => [p.id, p]));
-  const merged = skeletons.map((skeleton) => {
+  const merged: CmsPage[] = skeletons.map((skeleton) => {
     const prev = byId.get(skeleton.id);
     if (!prev) return skeleton;
     if (pageHasRealContent(prev)) {
@@ -123,7 +123,7 @@ export async function applyTemplateFully(preset: TemplatePreset) {
 
   await patchCmsState({
     museum: {
-      ...(state.museum || {}),
+      ...state.museum,
       theme: {
         accent: preset.tokens.accent,
         surface: preset.tokens.surface,
@@ -140,10 +140,10 @@ export async function applyTemplateFully(preset: TemplatePreset) {
       }
     },
     settings: {
-      ...(state.settings || {}),
+      ...state.settings,
       activeTemplateId: preset.id
     }
-  } as never);
+  });
 
   broadcastCatalogUpdate();
   return { navigation, pages, home, welcome };
