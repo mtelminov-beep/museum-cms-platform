@@ -18,6 +18,8 @@ export function TemplatesAdmin() {
     localStorage.setItem("museum-cms-template", id);
     applyTemplateToDocument(preset);
     try {
+      const currentRes = await fetch("/api/cms/state");
+      const current = currentRes.ok ? await currentRes.json() : {};
       const res = await fetch("/api/cms/state", {
         method: "PATCH",
         headers: {
@@ -26,6 +28,7 @@ export function TemplatesAdmin() {
         },
         body: JSON.stringify({
           museum: {
+            ...(current.museum || {}),
             theme: {
               accent: preset.tokens.accent,
               surface: preset.tokens.surface,
@@ -33,6 +36,7 @@ export function TemplatesAdmin() {
             }
           },
           settings: {
+            ...(current.settings || {}),
             activeTemplateId: preset.id
           }
         })

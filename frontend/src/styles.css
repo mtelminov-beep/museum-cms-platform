@@ -1087,6 +1087,270 @@ select {
   min-height: 640px;
 }
 
+/* Tilda-like editor */
+.tilda-editor {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #ded8cc;
+  background: #f7f4ee;
+  padding: 12px;
+}
+
+.tilda-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #ded8cc;
+  padding: 10px 12px;
+}
+
+.tilda-breakpoints {
+  display: flex;
+  gap: 6px;
+}
+
+.tilda-breakpoints button,
+.tilda-lib-grid button {
+  border: 1px solid #c9c2b5;
+  background: #fff;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.tilda-breakpoints button.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.tilda-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr 300px;
+  gap: 12px;
+  min-height: 640px;
+}
+
+.tilda-left,
+.tilda-right {
+  background: #fff;
+  border: 1px solid #ded8cc;
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  overflow: auto;
+  max-height: 75vh;
+}
+
+.tilda-canvas {
+  background: #fff;
+  border: 1px solid #203336;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 960px;
+  min-height: 640px;
+  padding: 16px;
+  overflow: auto;
+}
+
+.tilda-canvas--tablet {
+  max-width: 768px;
+}
+
+.tilda-canvas--mobile {
+  max-width: 390px;
+}
+
+.tilda-block {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.tilda-block.selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.tilda-block__type {
+  display: block;
+  font-size: 11px;
+  color: #667174;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.tilda-hero {
+  min-height: 220px;
+  display: grid;
+  align-content: end;
+  gap: 10px;
+  padding: 28px;
+  color: #fff;
+  background: linear-gradient(120deg, #203336, #2f6f73);
+  background-size: cover;
+}
+
+.tilda-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.tilda-gallery img,
+.tilda-block img,
+.tilda-block video {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+}
+
+.tilda-lib-group {
+  display: grid;
+  gap: 8px;
+}
+
+.tilda-lib-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.tilda-media-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.tilda-media-grid button {
+  border: 1px solid #ded8cc;
+  background: #faf8f3;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.tilda-media-grid img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.tilda-materials ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.tilda-materials li {
+  border: 1px solid #ded8cc;
+  padding: 8px;
+  display: grid;
+  gap: 4px;
+}
+
+.cms-media__list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.cms-media__list li {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #ded8cc;
+  padding: 8px;
+}
+
+.cms-media__list img {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: cover;
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.template-card {
+  background: #fff;
+  border: 1px solid #ded8cc;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.template-card.active {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.template-card__preview {
+  min-height: 110px;
+  display: grid;
+  place-items: center;
+  color: var(--ink, #111);
+  background: var(--surface, #f5f5f5);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+}
+
+.template-card__preview[data-hero="dark"] {
+  background: #14181b;
+  color: #f3efe6;
+}
+
+.template-card__preview[data-hero="split"] {
+  background: linear-gradient(90deg, var(--accent), var(--surface));
+  color: #fff;
+}
+
+.poster-tabs {
+  display: flex;
+  gap: 12px;
+  margin: 12px 0 20px;
+}
+
+.poster-tabs a {
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  padding-bottom: 4px;
+}
+
+.content-block--hero {
+  min-height: 280px;
+  display: grid;
+  align-content: end;
+  gap: 12px;
+  padding: 32px;
+  color: #fff;
+  background: linear-gradient(120deg, #203336, #2f6f73);
+  background-size: cover;
+  margin-bottom: 20px;
+}
+
+.content-block--cta {
+  padding: 20px;
+  border: 1px solid #ded8cc;
+  background: #fff;
+}
+
+@media (max-width: 1100px) {
+  .tilda-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 960px) {
   .admin-app,
   .array-editor,
