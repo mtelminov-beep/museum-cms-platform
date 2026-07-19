@@ -120,19 +120,39 @@ app.put("/api/cms/catalogs/:key", cmsGate, async (req, res, next) => {
   }
 });
 
-app.post("/api/cms/media", cmsGate, upload.single("file"), async (req, res) => {
-  if (!req.file) {
-    res.status(400).json({ error: "file required" });
-    return;
+app.post("/api/cms/media", cmsGate, upload.single("file"), async (req, res, next) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: "file required" });
+      return;
+    }
+    const url = `/uploads/${req.file.filename}`;
+    const state = await readState();
+    const asset = await createEntity(
+      "mediaAssets",
+      {
+        title: req.file.originalname,
+        url,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        alt: "",
+        license: "",
+        tags: [],
+        status: "published"
+      },
+      { tenantId: state.tenant?.id, actor: req.get("X-CMS-Actor") || "admin" }
+    );
+    res.status(201).json({
+      id: asset.id,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      mimeType: req.file.mimetype,
+      url,
+      asset
+    });
+  } catch (error) {
+    next(error);
   }
-  const url = `/uploads/${req.file.filename}`;
-  res.status(201).json({
-    id: req.file.filename,
-    originalName: req.file.originalname,
-    size: req.file.size,
-    mimeType: req.file.mimetype,
-    url
-  });
 });
 
 app.use(express.static(FRONTEND_DIST, { index: false }));
