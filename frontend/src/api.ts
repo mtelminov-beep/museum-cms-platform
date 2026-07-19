@@ -69,15 +69,23 @@ export async function putCatalog(key: CmsCatalogKey, payload: unknown) {
   return parseJson<{ key: string; updatedAt: string }>(res);
 }
 
-export async function uploadMedia(file: File) {
+export async function uploadMedia(file: File, folder = "uploads") {
   const body = new FormData();
   body.append("file", file);
+  body.append("folder", folder);
   const res = await fetch("/api/cms/media", {
     method: "POST",
     headers: { "X-CMS-Token": getCmsToken() },
     body
   });
-  return parseJson<{ id: string; url: string; originalName: string }>(res);
+  return parseJson<{ id: string; url: string; originalName: string; folder?: string }>(res);
+}
+
+export async function listMediaFolder(folder = "uploads") {
+  const res = await fetch(`/api/cms/media/list?folder=${encodeURIComponent(folder)}`, {
+    headers: { "X-CMS-Token": getCmsToken() }
+  });
+  return parseJson<{ folder: string; items: Array<{ url: string; fileName: string; size: number }> }>(res);
 }
 
 export async function probeCmsServer(): Promise<{ ok: boolean; time?: string; error?: string }> {
