@@ -14,8 +14,8 @@ export const PERMISSIONS = [
 ];
 
 export const ROLE_PERMISSIONS = {
-  owner: PERMISSIONS,
-  admin: PERMISSIONS.filter((p) => p !== "tenant.settings").concat(["tenant.settings"]),
+  owner: [...PERMISSIONS],
+  admin: [...PERMISSIONS],
   editor: ["content.read", "content.write", "content.publish", "media.write", "analytics.read"],
   curator: ["content.read", "content.write", "media.write"],
   designer: ["content.read", "content.write", "template.edit", "media.write"],
