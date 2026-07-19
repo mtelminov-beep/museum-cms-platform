@@ -3,12 +3,21 @@ import cors from "cors";
 import multer from "multer";
 import fs from "node:fs";
 import fsp from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { handleAdminLogin } from "./auth.js";
 import { CMS_CATALOG_KEYS, isCmsCatalogKey } from "./catalogKeys.js";
 import { cmsGate } from "./cmsSecurity.js";
 import { createEntity } from "./entities.js";
+import {
+  MEDIA_FOLDERS,
+  MEDIA_ROOT,
+  ensureMediaRoot,
+  listMediaFolder,
+  normalizeFolder,
+  saveUploadedMedia
+} from "./mediaUpload.js";
 import {
   getCatalog,
   listCatalogs,
@@ -27,29 +36,27 @@ const UPLOADS_DIR = path.join(PROJECT_ROOT, "backend", "data", "uploads");
 const app = express();
 const PORT = Number(process.env.PORT || 8787);
 
+ensureMediaRoot();
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
-  filename: (_req, file, cb) => {
-    const safe = String(file.originalname || "file")
-      .replace(/[^\w.\-]+/g, "_")
-      .slice(0, 80);
-    cb(null, `${Date.now()}-${safe}`);
-  }
+const upload = multer({
+  dest: path.join(os.tmpdir(), "museum-cms-uploads"),
+  limits: { fileSize: 64 * 1024 * 1024 }
 });
-const upload = multer({ storage, limits: { fileSize: 40 * 1024 * 1024 } });
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use("/uploads", express.static(UPLOADS_DIR));
+app.use("/uploads", express.static(path.join(MEDIA_ROOT, "uploads")));
+for (const folder of MEDIA_FOLDERS) {
+  app.use(`/${folder}`, express.static(path.join(MEDIA_ROOT, folder)));
+}
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "museum-cms-platform", time: new Date().toISOString() });
 });
 
 app.post("/api/auth/admin-login", handleAdminLogin);
-
 app.use("/api/v1", createV1Router());
 
 app.get("/api/cms/state", async (req, res, next) => {
@@ -120,34 +127,51 @@ app.put("/api/cms/catalogs/:key", cmsGate, async (req, res, next) => {
   }
 });
 
+app.get("/api/cms/media/folders", cmsGate, (_req, res) => {
+  res.json({ folders: MEDIA_FOLDERS });
+});
+
+app.get("/api/cms/media/list", cmsGate, async (req, res, next) => {
+  try {
+    const folder = normalizeFolder(req.query.folder);
+    res.json({ folder, items: await listMediaFolder(folder) });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post("/api/cms/media", cmsGate, upload.single("file"), async (req, res, next) => {
   try {
     if (!req.file) {
       res.status(400).json({ error: "file required" });
       return;
     }
-    const url = `/uploads/${req.file.filename}`;
+    const folder = normalizeFolder(req.body?.folder || req.query.folder || "uploads");
+    const saved = await saveUploadedMedia(req.file, folder);
     const state = await readState();
     const asset = await createEntity(
       "mediaAssets",
       {
-        title: req.file.originalname,
-        url,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
+        title: saved.originalName,
+        url: saved.url,
+        folder: saved.folder,
+        mimeType: saved.mimeType,
+        size: saved.size,
         alt: "",
         license: "",
-        tags: [],
+        tags: [saved.folder],
         status: "published"
       },
       { tenantId: state.tenant?.id, actor: req.get("X-CMS-Actor") || "admin" }
     );
     res.status(201).json({
       id: asset.id,
-      originalName: req.file.originalname,
-      size: req.file.size,
-      mimeType: req.file.mimetype,
-      url,
+      originalName: saved.originalName,
+      size: saved.size,
+      mimeType: saved.mimeType,
+      url: saved.url,
+      folder: saved.folder,
+      fileName: saved.fileName,
       asset
     });
   } catch (error) {
@@ -157,7 +181,7 @@ app.post("/api/cms/media", cmsGate, upload.single("file"), async (req, res, next
 
 app.use(express.static(FRONTEND_DIST, { index: false }));
 app.get("*", async (req, res, next) => {
-  if (req.path.startsWith("/api/") || req.path.startsWith("/uploads/")) {
+  if (req.path.startsWith("/api/")) {
     next();
     return;
   }
@@ -174,7 +198,7 @@ app.get("*", async (req, res, next) => {
 
 app.use((error, req, res, next) => {
   console.error(error);
-  res.status(500).json({ error: "Internal server error" });
+  res.status(500).json({ error: error?.message || "Internal server error" });
 });
 
 app.listen(PORT, () => {
