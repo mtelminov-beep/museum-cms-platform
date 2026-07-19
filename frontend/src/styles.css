@@ -1125,13 +1125,30 @@ select {
   min-height: 640px;
 }
 
-/* Tilda-like editor */
+.pages-catalog-editor--focus {
+  grid-template-columns: 1fr;
+  min-height: calc(100vh - 120px);
+}
+
+.pages-catalog-editor--focus .array-editor__detail {
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+.visual-page-editor--focus .vpe-modes {
+  margin-bottom: 8px;
+}
+
+/* Tilda-like visual editor: canvas first, drawers for library/props */
 .tilda-editor {
   display: grid;
-  gap: 12px;
+  gap: 0;
   border: 1px solid #ded8cc;
-  background: #f7f4ee;
-  padding: 12px;
+  background: #e8e4dc;
+  min-height: 720px;
+  position: relative;
+  overflow: hidden;
 }
 
 .tilda-topbar {
@@ -1141,8 +1158,18 @@ select {
   justify-content: space-between;
   align-items: center;
   background: #fff;
-  border: 1px solid #ded8cc;
-  padding: 10px 12px;
+  border-bottom: 1px solid #ded8cc;
+  padding: 10px 14px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.tilda-topbar__left {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
 }
 
 .tilda-breakpoints {
@@ -1164,75 +1191,260 @@ select {
   border-color: var(--accent);
 }
 
-.tilda-layout {
+.tilda-stage {
+  position: relative;
+  min-height: 680px;
   display: grid;
-  grid-template-columns: 260px 1fr 300px;
-  gap: 12px;
-  min-height: 640px;
 }
 
-.tilda-left,
-.tilda-right {
+.tilda-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(32, 51, 54, 0.28);
+  z-index: 6;
+  cursor: pointer;
+}
+
+.tilda-backdrop--props {
+  background: transparent;
+  pointer-events: none;
+}
+
+.tilda-drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 7;
+  width: min(320px, 92vw);
   background: #fff;
   border: 1px solid #ded8cc;
-  padding: 12px;
+  padding: 14px;
   display: grid;
   gap: 12px;
   align-content: start;
   overflow: auto;
-  max-height: 75vh;
+  box-shadow: 0 12px 40px rgba(32, 51, 54, 0.18);
+  animation: tilda-drawer-in 0.18s ease-out;
+}
+
+.tilda-drawer--left {
+  left: 0;
+  border-left: none;
+}
+
+.tilda-drawer--right {
+  right: 0;
+  border-right: none;
+  width: min(340px, 94vw);
+}
+
+@keyframes tilda-drawer-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tilda-drawer--right {
+  animation-name: tilda-drawer-in-right;
+}
+
+@keyframes tilda-drawer-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .tilda-canvas {
-  background: #fff;
-  border: 1px solid #203336;
-  margin: 0 auto;
+  width: 100%;
+  min-height: 680px;
+  padding: 28px 16px 48px;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.55), transparent 40%),
+    linear-gradient(180deg, #ddd7cc 0%, #e8e4dc 40%, #ebe7df 100%);
+}
+
+.tilda-page {
   width: 100%;
   max-width: 960px;
   min-height: 640px;
-  padding: 16px;
-  overflow: auto;
+  background: #fff;
+  border: 1px solid #203336;
+  box-shadow: 0 18px 50px rgba(32, 51, 54, 0.14);
+  padding: 28px 32px 48px;
+  transition: max-width 0.2s ease;
 }
 
-.tilda-canvas--tablet {
+.tilda-canvas--tablet .tilda-page {
   max-width: 768px;
 }
 
-.tilda-canvas--mobile {
+.tilda-canvas--mobile .tilda-page {
   max-width: 390px;
+  padding: 20px 16px 36px;
 }
 
-.tilda-block {
-  width: 100%;
-  text-align: left;
-  border: 1px solid transparent;
-  background: transparent;
-  padding: 8px;
-  cursor: pointer;
+.tilda-page__head {
+  margin-bottom: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #ece7dc;
 }
 
-.tilda-block.selected {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
+.tilda-page__head h1 {
+  margin: 0 0 8px;
+  font-size: clamp(1.6rem, 2.4vw, 2.2rem);
 }
 
-.tilda-block__type {
-  display: block;
-  font-size: 11px;
+.tilda-page__head p {
+  margin: 0;
   color: #667174;
-  margin-bottom: 6px;
-  text-transform: uppercase;
 }
 
-.tilda-hero {
-  min-height: 220px;
+.tilda-page__blocks {
   display: grid;
-  align-content: end;
-  gap: 10px;
-  padding: 28px;
+  gap: 0;
+}
+
+.tilda-page__blocks .content-blocks,
+.tilda-block-preview .content-block {
+  margin-top: 0;
+}
+
+.tilda-empty {
+  display: grid;
+  gap: 14px;
+  place-items: center;
+  text-align: center;
+  min-height: 280px;
+  padding: 40px 20px;
+  border: 1px dashed #c9c2b5;
+  background: #faf8f3;
+  margin: 24px 0;
+}
+
+.tilda-insert {
+  display: flex;
+  justify-content: center;
+  height: 28px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.tilda-page__blocks:hover .tilda-insert,
+.tilda-insert:focus-within {
+  opacity: 1;
+}
+
+.tilda-insert button {
+  border: 0;
+  background: var(--accent);
   color: #fff;
-  background: linear-gradient(120deg, #203336, #2f6f73);
-  background-size: cover;
+  border-radius: 999px;
+  padding: 2px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  align-self: center;
+}
+
+.tilda-block-wrap {
+  position: relative;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tilda-block-wrap:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.tilda-block-wrap.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.tilda-block-chrome {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: var(--accent);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-100%);
+}
+
+.tilda-block-wrap:hover .tilda-block-chrome,
+.tilda-block-wrap.selected .tilda-block-chrome {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tilda-block-chrome__type {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tilda-block-chrome__tools {
+  display: flex;
+  gap: 4px;
+}
+
+.tilda-block-chrome__tools button {
+  border: 0;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  width: 28px;
+  height: 24px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.tilda-block-chrome__tools button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tilda-block-preview {
+  min-height: 48px;
+}
+
+.tilda-block-preview .content-blocks {
+  margin-top: 0;
+  gap: 0;
+}
+
+.content-block--placeholder {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed #c9c2b5;
+  background: #faf8f3;
+  color: #667174;
+  padding: 24px;
+  text-align: center;
 }
 
 .tilda-gallery {
@@ -1241,9 +1453,7 @@ select {
   gap: 8px;
 }
 
-.tilda-gallery img,
-.tilda-block img,
-.tilda-block video {
+.tilda-gallery img {
   width: 100%;
   max-height: 280px;
   object-fit: cover;
@@ -1633,8 +1843,12 @@ html[data-template="science-split"] .btn {
 }
 
 @media (max-width: 1100px) {
-  .tilda-layout {
-    grid-template-columns: 1fr;
+  .tilda-drawer {
+    width: min(100%, 360px);
+  }
+
+  .tilda-page {
+    padding: 20px 16px 36px;
   }
 }
 
