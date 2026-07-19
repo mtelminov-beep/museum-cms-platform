@@ -1,3 +1,4 @@
+import { navFromSiteStructure, pagesFromSiteStructure } from "../site/structure";
 import type {
   CmsMaterial,
   CmsPage,
@@ -38,17 +39,26 @@ export const catalogDefaults = {
     heroTitle: "Исследуйте коллекции",
     heroDescription: "Разделы и страницы управляются из админ-панели.",
     heroImage: "",
-    heroPrimaryCta: { label: "Разделы", route: "/museum" },
+    heroPrimaryCta: { label: "Афиша", route: "/poster" },
     heroSecondaryCta: { label: "О музее", route: "/page/about" },
-    tiles: []
+    tiles: navFromSiteStructure()
+      .slice(0, 8)
+      .map((item) => ({
+        id: `tile-${item.id}`,
+        title: item.label,
+        subtitle: "",
+        image: "",
+        route: item.route,
+        published: true
+      }))
   } satisfies HomeScreenConfig,
   "cms-navigation-v1": {
     items: [
       { id: "home", label: "Главная", route: "/museum", published: true },
-      { id: "about", label: "О музее", route: "/page/about", published: true }
+      ...navFromSiteStructure()
     ]
   } satisfies NavigationConfig,
   "cms-sections-v1": [] as CmsSection[],
-  "cms-pages-v1": [] as CmsPage[],
+  "cms-pages-v1": pagesFromSiteStructure() as CmsPage[],
   "cms-materials-v1": [] as CmsMaterial[]
 };

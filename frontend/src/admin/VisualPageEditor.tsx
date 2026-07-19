@@ -406,25 +406,44 @@ export function PagesCatalogEditor({
       <aside className="array-editor__list">
         <div className="admin-section-head">
           <strong>Страницы</strong>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={() => {
-              const page: CmsPage = {
-                id: makeId("page"),
-                slug: `page-${Date.now().toString(36)}`,
-                title: "Новая страница",
-                summary: "",
-                status: "draft",
-                blocks: [],
-                subsections: []
-              };
-              onChange([...list, page]);
-              setSelectedId(page.id);
-            }}
-          >
-            + Страница
-          </button>
+          <div className="admin-actions">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => {
+                const seeded = pagesFromSiteStructure() as CmsPage[];
+                const byId = new Map(list.map((p) => [p.id, p]));
+                for (const page of seeded) {
+                  if (!byId.has(page.id)) byId.set(page.id, page);
+                }
+                onChange([...byId.values()]);
+                setSelectedId(seeded[0]?.id || list[0]?.id);
+              }}
+            >
+              Структура сайта
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => {
+                const page: CmsPage = {
+                  id: makeId("page"),
+                  slug: `page-${Date.now().toString(36)}`,
+                  title: "Новая страница",
+                  summary: "",
+                  status: "draft",
+                  sectionFolder: "uploads",
+                  materials: [],
+                  blocks: [],
+                  subsections: []
+                };
+                onChange([...list, page]);
+                setSelectedId(page.id);
+              }}
+            >
+              + Страница
+            </button>
+          </div>
         </div>
         <label className="admin-field">
           <span>Поиск</span>
