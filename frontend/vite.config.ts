@@ -7,8 +7,7 @@ export default defineConfig({
     host: true,
     proxy: {
       "/api": "http://localhost:8787",
-      "/uploads": "http://localhost:8787",
-      "/q": "http://localhost:8787"
+      "/uploads": "http://localhost:8787"
     }
   }
 });
