@@ -1,3 +1,4 @@
+import { navFromSiteStructure } from "../site/structure";
 import type { NavigationConfig, NavItem } from "../types";
 import { PublishToggle } from "./PublishToggle";
 

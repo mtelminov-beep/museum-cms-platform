@@ -8,8 +8,10 @@ import {
 import { ENTITY_NAV, EntityCollectionEditor, type EntityCollection } from "../admin/EntityCollectionEditor";
 import { HomeEditor } from "../admin/HomeEditor";
 import { NavigationEditor } from "../admin/NavigationEditor";
+import { TemplatesAdmin } from "../admin/TemplatesAdmin";
 import { PagesCatalogEditor } from "../admin/VisualPageEditor";
 import { WelcomeEditor } from "../admin/WelcomeEditor";
+import { navFromSiteStructure } from "../site/structure";
 import { clearAdminSession, getAdminSession, setAdminSession } from "../adminAuth";
 import {
   adminLogin,
@@ -38,7 +40,7 @@ import type {
   WelcomeScreenConfig
 } from "../types";
 
-type AdminTab = "content" | "entities" | "screens" | "display" | "android";
+type AdminTab = "content" | "entities" | "templates" | "screens" | "display" | "android";
 
 const DRAFT_PREFIX = "museum-cms-draft:";
 
@@ -287,6 +289,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             [
               ["content", "Страницы"],
               ["entities", "Контент"],
+              ["templates", "Шаблоны"],
               ["screens", "Носители"],
               ["display", "Display"],
               ["android", "Android"]
