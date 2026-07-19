@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  ArrayCatalogEditor,
+  createMaterialItem,
+  createSectionItem
+} from "../admin/ArrayCatalogEditor";
 import { ENTITY_NAV, EntityCollectionEditor, type EntityCollection } from "../admin/EntityCollectionEditor";
 import { HomeEditor } from "../admin/HomeEditor";
 import { NavigationEditor } from "../admin/NavigationEditor";
