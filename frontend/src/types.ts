@@ -1,7 +1,23 @@
 export type DeviceType = "touch-panel" | "tv-panel" | "projector" | "tablet";
 export type Rotation = 0 | 90 | 180 | 270;
 export type ContentStatus = "draft" | "published" | "archived";
-export type ContentBlockType = "text" | "image" | "video" | "audio";
+export type ContentBlockType =
+  | "text"
+  | "image"
+  | "video"
+  | "audio"
+  | "hero"
+  | "heading"
+  | "quote"
+  | "divider"
+  | "gallery"
+  | "cta"
+  | "columns"
+  | "exhibit-cards"
+  | "event-cards"
+  | "map"
+  | "ticket"
+  | "qr";
 
 export type CmsCatalogKey =
   | "cms-welcome-v1"
@@ -91,6 +107,20 @@ export interface ContentBlock {
   text?: string;
   src?: string;
   caption?: string;
+  /** Доп. URL для галереи / колонок */
+  items?: string[];
+  href?: string;
+  buttonLabel?: string;
+  paddingY?: number;
+  align?: "left" | "center" | "right";
+}
+
+export interface PageMaterial {
+  id: string;
+  title: string;
+  url: string;
+  kind: "image" | "video" | "audio" | "pdf" | "other";
+  caption?: string;
 }
 
 export interface PageSubsection {
@@ -117,8 +147,15 @@ export interface CmsPage {
   title: string;
   summary?: string;
   status: ContentStatus;
+  sectionFolder?: string;
   blocks: ContentBlock[];
+  materials?: PageMaterial[];
   subsections?: PageSubsection[];
+}
+
+export interface TemplateSelection {
+  activeTemplateId: string;
+  updatedAt?: string;
 }
 
 export interface CmsMaterial {

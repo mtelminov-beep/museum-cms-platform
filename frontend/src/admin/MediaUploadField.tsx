@@ -5,23 +5,29 @@ function isImage(url: string) {
   return /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(url) || url.startsWith("data:image");
 }
 function isVideo(url: string) {
-  return /\.(mp4|webm|ogg)(\?|$)/i.test(url) || url.startsWith("data:video");
+  return /\.(mp4|webm|ogg)(\?|$)/i.test(url) || /youtube|youtu\.be|vk\.com|rutube/i.test(url);
 }
 function isAudio(url: string) {
-  return /\.(mp3|wav|ogg|m4a)(\?|$)/i.test(url) || url.startsWith("data:audio");
+  return /\.(mp3|wav|ogg|m4a)(\?|$)/i.test(url);
 }
 
 export function MediaUploadField({
   label,
   value,
   onChange,
-  hint
+  hint,
+  folder = "uploads",
+  multiple = false
 }: {
   label: string;
-  value: string;
-  onChange: (url: string) => void;
+  value: string | string[];
+  onChange: (url: string | string[]) => void;
   hint?: string;
+  folder?: string;
+  multiple?: boolean;
 }) {
+  const urls = multiple ? (Array.isArray(value) ? value : []) : [];
+  const single = multiple ? "" : String(value ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -29,20 +35,25 @@ export function MediaUploadField({
 
   const uploadFiles = useCallback(
     async (files: FileList | File[]) => {
-      const file = [...files][0];
-      if (!file) return;
+      const list = [...files];
+      if (!list.length) return;
       setBusy(true);
       setError(null);
       try {
-        const result = await uploadMedia(file);
-        onChange(result.url);
+        const uploaded: string[] = [];
+        for (const file of list) {
+          const result = await uploadMedia(file, folder);
+          uploaded.push(result.url);
+        }
+        if (multiple) onChange([...urls, ...uploaded]);
+        else onChange(uploaded[0] ?? "");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Ошибка загрузки");
       } finally {
         setBusy(false);
       }
     },
-    [onChange]
+    [folder, multiple, onChange, urls]
   );
 
   const onDrop = (event: React.DragEvent) => {
@@ -59,20 +70,23 @@ export function MediaUploadField({
         <div className="admin-media-row">
           <input
             type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder="/uploads/... или URL"
+            value={multiple ? "" : single}
+            placeholder={multiple ? "URL добавляется загрузкой" : "/exhibits/... или внешний URL"}
+            onChange={(e) => (!multiple ? onChange(e.target.value) : undefined)}
+            disabled={multiple}
           />
           <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => inputRef.current?.click()}>
             {busy ? "…" : "Файл"}
           </button>
         </div>
+        <small className="hint">Папка: {folder}</small>
       </label>
 
       <input
         ref={inputRef}
         type="file"
         hidden
+        multiple={multiple}
         accept="image/*,video/*,audio/*,.pdf"
         onChange={(e) => {
           if (e.target.files?.length) void uploadFiles(e.target.files);
@@ -80,52 +94,47 @@ export function MediaUploadField({
         }}
       />
 
-      {value ? (
-        <div
-          className={`cms-media__current${dragOver ? " cms-media__current--active" : ""}`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragOver(true);
-          }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={onDrop}
-        >
-          <span className="hint">Текущий файл — перетащите новый, чтобы заменить</span>
-          <div className="cms-media__preview">
-            {isImage(value) ? <img src={value} alt="" /> : null}
-            {isVideo(value) ? <video src={value} controls preload="metadata" /> : null}
-            {isAudio(value) ? <audio src={value} controls preload="none" /> : null}
-            {!isImage(value) && !isVideo(value) && !isAudio(value) ? (
-              <a href={value} target="_blank" rel="noreferrer">
-                Открыть файл
-              </a>
-            ) : null}
-          </div>
-          <div className="admin-actions">
-            <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => inputRef.current?.click()}>
-              Заменить
-            </button>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => onChange("")}>
-              Удалить
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div
-          className={`cms-media__drop${dragOver ? " cms-media__drop--active" : ""}`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragOver(true);
-          }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={onDrop}
-        >
-          <p>{busy ? "Загрузка…" : "Перетащите файл сюда или выберите на компьютере"}</p>
-          <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => inputRef.current?.click()}>
-            Выбрать файл
+      <div
+        className={`cms-media__drop${dragOver ? " cms-media__drop--active" : ""}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDrop}
+      >
+        <p>{busy ? "Загрузка…" : "Перетащите файлы сюда (изображение, видео, аудио, PDF)"}</p>
+      </div>
+
+      {!multiple && single ? (
+        <div className="cms-media__preview">
+          {isImage(single) ? <img src={single} alt="" /> : null}
+          {isVideo(single) && !/youtube|vk\.com|rutube/i.test(single) ? (
+            <video src={single} controls preload="metadata" />
+          ) : null}
+          {isAudio(single) ? <audio src={single} controls /> : null}
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => onChange("")}>
+            Удалить
           </button>
         </div>
-      )}
+      ) : null}
+
+      {multiple && urls.length ? (
+        <ul className="cms-media__list">
+          {urls.map((url, index) => (
+            <li key={`${url}-${index}`}>
+              {isImage(url) ? <img src={url} alt="" /> : <a href={url}>{url}</a>}
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => onChange(urls.filter((_, i) => i !== index))}
+              >
+                Удалить
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       {error ? <small className="admin-error">{error}</small> : null}
     </div>
