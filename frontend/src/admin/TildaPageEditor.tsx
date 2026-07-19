@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CmsPage, ContentBlock, ContentBlockType, PageMaterial } from "../types";
+import { BlockView } from "../components/ContentBlocks";
 import { listMediaFolder, uploadMedia } from "../api";
 import { MediaUploadField } from "./MediaUploadField";
 import { RichTextEditor } from "./RichTextEditor";
@@ -64,72 +65,26 @@ function emptyBlock(type: ContentBlockType): ContentBlock {
   return base;
 }
 
-function CanvasBlock({
-  block,
-  selected,
-  onSelect
-}: {
-  block: ContentBlock;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button type="button" className={`tilda-block${selected ? " selected" : ""}`} onClick={onSelect}>
-      <span className="tilda-block__type">{BLOCK_LIBRARY.find((b) => b.value === block.type)?.label}</span>
-      {block.type === "hero" ? (
-        <div className="tilda-hero" style={block.src ? { backgroundImage: `url(${block.src})` } : undefined}>
-          <h2>{block.title || "Hero"}</h2>
-          <div className="rich-html" dangerouslySetInnerHTML={{ __html: block.text || "" }} />
-          {block.buttonLabel ? <span className="btn">{block.buttonLabel}</span> : null}
-        </div>
-      ) : null}
-      {block.type === "heading" ? <h2>{block.title || "Заголовок"}</h2> : null}
-      {block.type === "text" || block.type === "quote" ? (
-        <div className="rich-html" dangerouslySetInnerHTML={{ __html: block.text || "<p>Текст</p>" }} />
-      ) : null}
-      {block.type === "divider" ? <hr /> : null}
-      {block.type === "image" && block.src ? <img src={block.src} alt={block.caption || ""} /> : null}
-      {block.type === "gallery" ? (
-        <div className="tilda-gallery">
-          {(block.items || []).map((src) => (
-            <img key={src} src={src} alt="" />
-          ))}
-          {!block.items?.length ? <span className="hint">Галерея пуста</span> : null}
-        </div>
-      ) : null}
-      {block.type === "video" && block.src ? <video src={block.src} controls /> : null}
-      {block.type === "audio" && block.src ? <audio src={block.src} controls /> : null}
-      {block.type === "cta" || block.type === "ticket" || block.type === "qr" ? (
-        <div className="tilda-cta">
-          <strong>{block.title}</strong>
-          <div className="rich-html" dangerouslySetInnerHTML={{ __html: block.text || "" }} />
-          <span className="btn">{block.buttonLabel || "Кнопка"}</span>
-        </div>
-      ) : null}
-      {block.type === "exhibit-cards" || block.type === "event-cards" ? (
-        <div className="tilda-cards-placeholder">{block.title || "Карточки из данных CMS"}</div>
-      ) : null}
-      {block.type === "map" || block.type === "columns" ? (
-        <div className="tilda-map-placeholder">
-          <strong>{block.title || block.type}</strong>
-          <div className="rich-html" dangerouslySetInnerHTML={{ __html: block.text || "" }} />
-        </div>
-      ) : null}
-    </button>
-  );
+function blockLabel(type: ContentBlockType) {
+  return BLOCK_LIBRARY.find((b) => b.value === type)?.label || type;
 }
 
 export function TildaPageEditor({
   page,
-  onChange
+  onChange,
+  onOpenPages
 }: {
   page: CmsPage;
   onChange: (next: CmsPage) => void;
+  onOpenPages?: () => void;
 }) {
   const folder = page.sectionFolder || "uploads";
   const [breakpoint, setBreakpoint] = useState<Breakpoint>("desktop");
   const [selectedId, setSelectedId] = useState<string | undefined>(page.blocks?.[0]?.id);
   const [leftTab, setLeftTab] = useState<"blocks" | "media" | "materials">("blocks");
+  const [libraryOpen, setLibraryOpen] = useState(true);
+  const [propsOpen, setPropsOpen] = useState(true);
+  const [insertAt, setInsertAt] = useState<number | null>(null);
   const [library, setLibrary] = useState<Array<{ url: string; fileName: string }>>([]);
   const [undo, setUndo] = useState<CmsPage[]>([]);
 
@@ -145,6 +100,10 @@ export function TildaPageEditor({
     return [...map.entries()];
   }, []);
 
+  useEffect(() => {
+    if (selected) setPropsOpen(true);
+  }, [selectedId]);
+
   const commit = (next: CmsPage) => {
     setUndo((stack) => [page, ...stack].slice(0, 20));
     onChange(next);
@@ -157,10 +116,16 @@ export function TildaPageEditor({
     setBlocks(blocks.map((b) => (b.id === selected.id ? { ...b, ...patch } : b)));
   };
 
-  const addBlock = (type: ContentBlockType) => {
+  const addBlock = (type: ContentBlockType, at?: number | null) => {
     const block = emptyBlock(type);
-    setBlocks([...blocks, block]);
+    const index = typeof at === "number" ? at : blocks.length;
+    const next = [...blocks];
+    next.splice(index, 0, block);
+    setBlocks(next);
     setSelectedId(block.id);
+    setInsertAt(null);
+    setPropsOpen(true);
+    setLibraryOpen(false);
   };
 
   const move = (index: number, dir: -1 | 1) => {
@@ -197,12 +162,32 @@ export function TildaPageEditor({
     await loadLibrary();
   };
 
+  const openLibrary = (tab: "blocks" | "media" | "materials" = "blocks") => {
+    setLeftTab(tab);
+    setLibraryOpen(true);
+    if (tab === "media") void loadLibrary();
+  };
+
   return (
-    <div className="tilda-editor">
+    <div className={`tilda-editor${libraryOpen ? " tilda-editor--lib" : ""}${propsOpen && selected ? " tilda-editor--props" : ""}`}>
       <header className="tilda-topbar">
-        <div>
-          <strong>{page.title}</strong>
-          <span className="hint"> / {page.slug}</span>
+        <div className="tilda-topbar__left">
+          {onOpenPages ? (
+            <button type="button" className="btn btn-ghost btn-sm" onClick={onOpenPages}>
+              ← Страницы
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className={`btn btn-sm${libraryOpen ? "" : " btn-ghost"}`}
+            onClick={() => (libraryOpen ? setLibraryOpen(false) : openLibrary("blocks"))}
+          >
+            {libraryOpen ? "Скрыть блоки" : "+ Блоки"}
+          </button>
+          <div>
+            <strong>{page.title}</strong>
+            <span className="hint"> / {page.slug}</span>
+          </div>
         </div>
         <div className="tilda-breakpoints">
           {(["desktop", "tablet", "mobile"] as Breakpoint[]).map((bp) => (
@@ -225,182 +210,284 @@ export function TildaPageEditor({
           >
             Отменить
           </button>
+          <button
+            type="button"
+            className={`btn btn-sm${propsOpen && selected ? "" : " btn-ghost"}`}
+            disabled={!selected}
+            onClick={() => setPropsOpen((v) => !v)}
+          >
+            Свойства
+          </button>
         </div>
       </header>
 
-      <div className="tilda-layout">
-        <aside className="tilda-left">
-          <div className="vpe-modes">
-            <button type="button" className={leftTab === "blocks" ? "active" : ""} onClick={() => setLeftTab("blocks")}>
-              Блоки
-            </button>
-            <button
-              type="button"
-              className={leftTab === "media" ? "active" : ""}
-              onClick={() => {
-                setLeftTab("media");
-                void loadLibrary();
-              }}
-            >
-              Медиа
-            </button>
-            <button type="button" className={leftTab === "materials" ? "active" : ""} onClick={() => setLeftTab("materials")}>
-              Материалы
-            </button>
-          </div>
+      <div className="tilda-stage">
+        {(libraryOpen || insertAt !== null) && (
+          <>
+            <button type="button" className="tilda-backdrop" aria-label="Закрыть библиотеку" onClick={() => {
+              setLibraryOpen(false);
+              setInsertAt(null);
+            }} />
+            <aside className="tilda-drawer tilda-drawer--left">
+              <div className="admin-section-head">
+                <strong>{insertAt !== null ? "Вставить блок" : "Библиотека"}</strong>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => {
+                    setLibraryOpen(false);
+                    setInsertAt(null);
+                  }}
+                >
+                  Закрыть
+                </button>
+              </div>
+              <div className="vpe-modes">
+                <button type="button" className={leftTab === "blocks" ? "active" : ""} onClick={() => setLeftTab("blocks")}>
+                  Блоки
+                </button>
+                <button
+                  type="button"
+                  className={leftTab === "media" ? "active" : ""}
+                  onClick={() => {
+                    setLeftTab("media");
+                    void loadLibrary();
+                  }}
+                >
+                  Медиа
+                </button>
+                <button type="button" className={leftTab === "materials" ? "active" : ""} onClick={() => setLeftTab("materials")}>
+                  Материалы
+                </button>
+              </div>
 
-          {leftTab === "blocks"
-            ? groups.map(([group, items]) => (
-                <div key={group} className="tilda-lib-group">
-                  <strong>{group}</strong>
-                  <div className="tilda-lib-grid">
-                    {items.map((item) => (
-                      <button key={item.value} type="button" onClick={() => addBlock(item.value)}>
-                        + {item.label}
+              {leftTab === "blocks"
+                ? groups.map(([group, items]) => (
+                    <div key={group} className="tilda-lib-group">
+                      <strong>{group}</strong>
+                      <div className="tilda-lib-grid">
+                        {items.map((item) => (
+                          <button key={item.value} type="button" onClick={() => addBlock(item.value, insertAt)}>
+                            + {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                : null}
+
+              {leftTab === "media" ? (
+                <div className="tilda-media-lib">
+                  <p className="hint">Папка раздела: {folder}. Клик по файлу подставит его в выбранный блок.</p>
+                  <label className="btn btn-ghost btn-sm">
+                    Загрузить в раздел
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*,video/*,audio/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void addMaterial(file);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  <div className="tilda-media-grid">
+                    {library.map((item) => (
+                      <button
+                        key={item.url}
+                        type="button"
+                        title={item.fileName}
+                        onClick={() => {
+                          if (!selected) return;
+                          if (selected.type === "gallery") {
+                            updateSelected({ items: [...(selected.items || []), item.url] });
+                          } else {
+                            updateSelected({ src: item.url });
+                          }
+                        }}
+                      >
+                        {/\.(png|jpe?g|gif|webp|svg)$/i.test(item.url) ? (
+                          <img src={item.url} alt="" />
+                        ) : (
+                          <span>{item.fileName}</span>
+                        )}
                       </button>
                     ))}
                   </div>
                 </div>
-              ))
-            : null}
+              ) : null}
 
-          {leftTab === "media" ? (
-            <div className="tilda-media-lib">
-              <p className="hint">Папка раздела: {folder}</p>
-              <label className="btn btn-ghost btn-sm">
-                Загрузить в раздел
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*,video/*,audio/*,.pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void addMaterial(file);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-              <div className="tilda-media-grid">
-                {library.map((item) => (
-                  <button
-                    key={item.url}
-                    type="button"
-                    title={item.fileName}
+              {leftTab === "materials" ? (
+                <div className="tilda-materials">
+                  <p className="hint">Материалы раздела — файлы для страницы (фото, видео, PDF).</p>
+                  <label className="btn btn-sm">
+                    + Материал
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*,video/*,audio/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void addMaterial(file);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  <ul>
+                    {(page.materials || []).map((mat) => (
+                      <li key={mat.id}>
+                        <strong>{mat.title}</strong>
+                        <small>
+                          {mat.kind} · {mat.url}
+                        </small>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() =>
+                            commit({
+                              ...page,
+                              materials: (page.materials || []).filter((m) => m.id !== mat.id)
+                            })
+                          }
+                        >
+                          Удалить
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </aside>
+          </>
+        )}
+
+        <main
+          className={`tilda-canvas tilda-canvas--${breakpoint}`}
+          onClick={() => {
+            setSelectedId(undefined);
+            setPropsOpen(false);
+          }}
+        >
+          <div className="tilda-page" onClick={(e) => e.stopPropagation()}>
+            <header className="tilda-page__head">
+              <h1>{page.title || "Страница"}</h1>
+              {page.summary ? <p>{page.summary}</p> : null}
+            </header>
+
+            {!blocks.length ? (
+              <div className="tilda-empty">
+                <p>Страница пустая — соберите её блоками, как на сайте.</p>
+                <button type="button" className="btn" onClick={() => openLibrary("blocks")}>
+                  Добавить первый блок
+                </button>
+              </div>
+            ) : null}
+
+            <div className="tilda-page__blocks">
+              <div className="tilda-insert">
+                <button type="button" onClick={() => { setInsertAt(0); setLibraryOpen(true); setLeftTab("blocks"); }}>
+                  + блок
+                </button>
+              </div>
+
+              {blocks.map((block, index) => (
+                <div key={block.id}>
+                  <div
+                    className={`tilda-block-wrap${selectedId === block.id ? " selected" : ""}`}
                     onClick={() => {
-                      if (!selected) return;
-                      if (selected.type === "gallery") {
-                        updateSelected({ items: [...(selected.items || []), item.url] });
-                      } else {
-                        updateSelected({ src: item.url });
-                      }
+                      setSelectedId(block.id);
+                      setPropsOpen(true);
                     }}
                   >
-                    {/\.(png|jpe?g|gif|webp|svg)$/i.test(item.url) ? (
-                      <img src={item.url} alt="" />
-                    ) : (
-                      <span>{item.fileName}</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
+                    <div className="tilda-block-chrome">
+                      <span className="tilda-block-chrome__type">{blockLabel(block.type)}</span>
+                      <div className="tilda-block-chrome__tools">
+                        <button type="button" disabled={index === 0} onClick={(e) => { e.stopPropagation(); move(index, -1); }} title="Выше">
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          disabled={index === blocks.length - 1}
+                          onClick={(e) => { e.stopPropagation(); move(index, 1); }}
+                          title="Ниже"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const copy = { ...block, id: makeId("block") };
+                            const next = [...blocks];
+                            next.splice(index + 1, 0, copy);
+                            setBlocks(next);
+                            setSelectedId(copy.id);
+                          }}
+                          title="Дублировать"
+                        >
+                          ⧉
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setBlocks(blocks.filter((b) => b.id !== block.id));
+                            if (selectedId === block.id) {
+                              setSelectedId(undefined);
+                              setPropsOpen(false);
+                            }
+                          }}
+                          title="Удалить"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                    <div className="tilda-block-preview">
+                      <BlockView block={block} showEmpty />
+                    </div>
+                  </div>
 
-          {leftTab === "materials" ? (
-            <div className="tilda-materials">
-              <p className="hint">Материалы раздела — файлы для страницы (как в SHIHM: фото, видео, PDF).</p>
-              <label className="btn btn-sm">
-                + Материал
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*,video/*,audio/*,.pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void addMaterial(file);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-              <ul>
-                {(page.materials || []).map((mat) => (
-                  <li key={mat.id}>
-                    <strong>{mat.title}</strong>
-                    <small>
-                      {mat.kind} · {mat.url}
-                    </small>
+                  <div className="tilda-insert">
                     <button
                       type="button"
-                      className="btn btn-ghost btn-sm"
-                      onClick={() =>
-                        commit({
-                          ...page,
-                          materials: (page.materials || []).filter((m) => m.id !== mat.id)
-                        })
-                      }
+                      onClick={() => {
+                        setInsertAt(index + 1);
+                        setLibraryOpen(true);
+                        setLeftTab("blocks");
+                      }}
                     >
-                      Удалить
+                      + блок
                     </button>
-                  </li>
-                ))}
-              </ul>
+                  </div>
+                </div>
+              ))}
             </div>
-          ) : null}
-        </aside>
-
-        <main className={`tilda-canvas tilda-canvas--${breakpoint}`}>
-          {!blocks.length ? <p className="hint">Добавьте блоки слева — холст как у посетителя.</p> : null}
-          {blocks.map((block, index) => (
-            <div key={block.id} className="tilda-canvas__row">
-              <div className="vpe-canvas__tools">
-                <button type="button" className="btn btn-ghost btn-sm" disabled={index === 0} onClick={() => move(index, -1)}>
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  disabled={index === blocks.length - 1}
-                  onClick={() => move(index, 1)}
-                >
-                  ↓
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => {
-                    const copy = { ...block, id: makeId("block") };
-                    const next = [...blocks];
-                    next.splice(index + 1, 0, copy);
-                    setBlocks(next);
-                    setSelectedId(copy.id);
-                  }}
-                >
-                  Дублировать
-                </button>
-              </div>
-              <CanvasBlock block={block} selected={selectedId === block.id} onSelect={() => setSelectedId(block.id)} />
-            </div>
-          ))}
+          </div>
         </main>
 
-        <aside className="tilda-right">
-          {!selected ? (
-            <p className="hint">Выберите блок на холсте</p>
-          ) : (
-            <>
+        {propsOpen && selected ? (
+          <>
+            <button type="button" className="tilda-backdrop tilda-backdrop--props" aria-label="Закрыть свойства" onClick={() => setPropsOpen(false)} />
+            <aside className="tilda-drawer tilda-drawer--right" onClick={(e) => e.stopPropagation()}>
               <div className="admin-section-head">
-                <strong>Свойства</strong>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => {
-                    setBlocks(blocks.filter((b) => b.id !== selected.id));
-                    setSelectedId(undefined);
-                  }}
-                >
-                  Удалить блок
+                <strong>Свойства · {blockLabel(selected.type)}</strong>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPropsOpen(false)}>
+                  Закрыть
                 </button>
               </div>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  setBlocks(blocks.filter((b) => b.id !== selected.id));
+                  setSelectedId(undefined);
+                  setPropsOpen(false);
+                }}
+              >
+                Удалить блок
+              </button>
               <label className="admin-field">
                 <span>Заголовок</span>
                 <input value={selected.title || ""} onChange={(e) => updateSelected({ title: e.target.value })} />
@@ -451,9 +538,10 @@ export function TildaPageEditor({
                   <option value="right">Справа</option>
                 </select>
               </label>
-            </>
-          )}
-        </aside>
+              <p className="hint">Изменения сразу видны на холсте — так же, как на публичной странице.</p>
+            </aside>
+          </>
+        ) : null}
       </div>
     </div>
   );
