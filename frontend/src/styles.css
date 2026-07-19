@@ -418,6 +418,89 @@ select {
   grid-template-columns: 280px 1fr;
 }
 
+.admin-app--site .admin-main {
+  padding: 0;
+  gap: 0;
+  min-height: 100vh;
+  align-content: stretch;
+}
+
+.site-builder {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  background: #f3f0ea;
+}
+
+.site-builder__nav {
+  background: #1c3334;
+  color: #f8f5ef;
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+  border-right: 1px solid #123;
+}
+
+.site-builder__nav .admin-section-head {
+  color: #f8f5ef;
+  margin-bottom: 4px;
+}
+
+.site-builder__nav .btn-ghost {
+  color: #dce7e5;
+}
+
+.site-builder__hint {
+  color: #b7c6c4;
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.site-builder__item {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.site-builder__item small {
+  opacity: 0.75;
+  font-size: 11px;
+}
+
+.site-builder__item:hover,
+.site-builder__item.active {
+  background: var(--accent);
+}
+
+.site-builder__main {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  min-height: 100vh;
+}
+
+.site-builder__head {
+  padding: 16px 20px 8px;
+  background: #fff;
+  border-bottom: 1px solid #ded8cc;
+}
+
+.site-builder__main .tilda-editor {
+  border: 0;
+  border-radius: 0;
+  min-height: calc(100vh - 88px);
+}
+
 .admin-shell {
   background: var(--panel);
   color: #f8f5ef;

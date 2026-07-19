@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { pagesFromSiteStructure, SITE_SECTIONS } from "../site/structure";
 import type { CmsPage } from "../types";
 import { TildaPageEditor } from "./TildaPageEditor";
@@ -9,7 +9,6 @@ function mergeSitePages(existing: CmsPage[]): CmsPage[] {
   for (const page of seeded) {
     if (!byId.has(page.id)) byId.set(page.id, page);
   }
-  // Keep site sections first, then custom pages
   const order = new Map(SITE_SECTIONS.map((s, i) => [s.id, i]));
   return [...byId.values()].sort((a, b) => {
     const ai = order.has(a.id) ? (order.get(a.id) as number) : 1000;
@@ -36,21 +35,18 @@ export function SiteBuilderAdmin({
   const [selectedId, setSelectedId] = useState(SITE_SECTIONS[0]?.id || list[0]?.id);
   const selected = list.find((p) => p.id === selectedId) ?? list[0] ?? null;
   const sectionMeta = SITE_SECTIONS.find((s) => s.id === selected?.id);
+  const seededRef = useRef(false);
 
   useEffect(() => {
-    // Ensure canonical pages exist in draft once
-    const merged = mergeSitePages(Array.isArray(pages) ? pages : []);
-    if (merged.length !== (pages?.length || 0) || merged.some((p, i) => p.id !== pages?.[i]?.id)) {
-      const same =
-        merged.length === (pages?.length || 0) &&
-        merged.every((p) => {
-          const cur = pages?.find((x) => x.id === p.id);
-          return cur != null;
-        });
-      if (!same) onChange(merged);
+    if (seededRef.current) return;
+    const missing = SITE_SECTIONS.some((s) => !pages?.some((p) => p.id === s.id));
+    if (missing || !pages?.length) {
+      seededRef.current = true;
+      onChange(mergeSitePages(Array.isArray(pages) ? pages : []));
+    } else {
+      seededRef.current = true;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- seed once when empty / missing structure
-  }, []);
+  }, [pages, onChange]);
 
   useEffect(() => {
     if (!list.some((p) => p.id === selectedId) && list[0]) {
