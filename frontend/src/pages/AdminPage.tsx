@@ -1,10 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  ArrayCatalogEditor,
-  createMaterialItem,
-  createSectionItem
-} from "../admin/ArrayCatalogEditor";
+import { ENTITY_NAV, EntityCollectionEditor, type EntityCollection } from "../admin/EntityCollectionEditor";
 import { HomeEditor } from "../admin/HomeEditor";
 import { NavigationEditor } from "../admin/NavigationEditor";
 import { PagesCatalogEditor } from "../admin/VisualPageEditor";
@@ -37,7 +33,7 @@ import type {
   WelcomeScreenConfig
 } from "../types";
 
-type AdminTab = "content" | "screens" | "display" | "android";
+type AdminTab = "content" | "entities" | "screens" | "display" | "android";
 
 const DRAFT_PREFIX = "museum-cms-draft:";
 

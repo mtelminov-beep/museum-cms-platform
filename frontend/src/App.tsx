@@ -3,6 +3,7 @@ import { applyKioskEnvironment } from "./device/kiosk";
 import { AdminPage } from "./pages/AdminPage";
 import { ContentPage } from "./pages/ContentPage";
 import { DisplayPage } from "./pages/DisplayPage";
+import { ExhibitPage, QrRedirectPage } from "./pages/EntityPublicPages";
 import { HomePage } from "./pages/HomePage";
 import { MaterialsPage } from "./pages/MaterialsPage";
 import { SectionPage } from "./pages/SectionPage";
@@ -25,6 +26,8 @@ export default function App() {
           <Route path="/section/:id" element={<SectionPage />} />
           <Route path="/page/:id" element={<ContentPage />} />
           <Route path="/materials" element={<MaterialsPage />} />
+          <Route path="/exhibits/:id" element={<ExhibitPage />} />
+          <Route path="/q/:publicId" element={<QrRedirectPage />} />
           <Route path="/display/:screenId" element={<DisplayPage />} />
           <Route path="/display" element={<DisplayPage />} />
           <Route path="/admin" element={<AdminPage />} />
