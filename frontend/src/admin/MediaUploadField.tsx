@@ -15,13 +15,15 @@ export function MediaUploadField({
   label,
   value,
   onChange,
+  onChangeMultiple,
   hint,
   folder = "uploads",
   multiple = false
 }: {
   label: string;
   value: string | string[];
-  onChange: (url: string | string[]) => void;
+  onChange?: (url: string) => void;
+  onChangeMultiple?: (urls: string[]) => void;
   hint?: string;
   folder?: string;
   multiple?: boolean;
@@ -45,15 +47,15 @@ export function MediaUploadField({
           const result = await uploadMedia(file, folder);
           uploaded.push(result.url);
         }
-        if (multiple) onChange([...urls, ...uploaded]);
-        else onChange(uploaded[0] ?? "");
+        if (multiple) onChangeMultiple?.([...urls, ...uploaded]);
+        else onChange?.(uploaded[0] ?? "");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Ошибка загрузки");
       } finally {
         setBusy(false);
       }
     },
-    [folder, multiple, onChange, urls]
+    [folder, multiple, onChange, onChangeMultiple, urls]
   );
 
   const onDrop = (event: React.DragEvent) => {
