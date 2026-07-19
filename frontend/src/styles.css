@@ -1381,6 +1381,255 @@ select {
   padding: 20px;
   border: 1px solid #ded8cc;
   background: #fff;
+  border-radius: var(--radius);
+}
+
+.content-block--hero {
+  border-radius: var(--radius);
+  background: linear-gradient(120deg, var(--panel), var(--accent));
+}
+
+/* —— Template presentation: menu / hero / tiles —— */
+
+html[data-menu-style="light-bar"] .public-header {
+  background: var(--surface);
+  color: var(--ink);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+html[data-menu-style="light-bar"] .public-admin-link {
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+}
+
+html[data-menu-style="light-bar"] .public-header a.active {
+  color: var(--accent);
+  text-decoration: none;
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+html[data-menu-style="minimal"] .public-header {
+  background: transparent;
+  color: var(--ink);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 20px;
+  padding-bottom: 16px;
+}
+
+html[data-menu-style="minimal"] .public-brand {
+  font-size: 1.35rem;
+  letter-spacing: 0.2em;
+}
+
+html[data-menu-style="minimal"] .public-nav {
+  justify-content: center;
+  gap: 18px;
+  font-size: 0.92rem;
+}
+
+html[data-menu-style="minimal"] .public-admin-link {
+  border-color: color-mix(in srgb, var(--ink) 25%, transparent);
+}
+
+html[data-menu-style="editorial"] .public-header {
+  background: var(--panel);
+  color: var(--ink);
+  border-bottom: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+}
+
+html[data-menu-style="editorial"] .public-brand {
+  color: var(--gold);
+  letter-spacing: 0.16em;
+}
+
+html[data-menu-style="editorial"] .public-nav {
+  gap: 18px;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+}
+
+html[data-menu-style="touch-tiles"] .public-header {
+  background: var(--surface);
+  color: var(--ink);
+  border-bottom: 0;
+  box-shadow: 0 8px 24px rgba(15, 61, 58, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+html[data-menu-style="touch-tiles"] .public-nav {
+  gap: 8px;
+}
+
+html[data-menu-style="touch-tiles"] .public-nav a:not(.public-admin-link) {
+  background: color-mix(in srgb, var(--accent) 12%, #fff);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+html[data-menu-style="touch-tiles"] .public-nav a.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+html[data-menu-style="split-nav"] .public-header {
+  background: var(--panel);
+  color: #f8fafc;
+  border-left: 6px solid var(--accent);
+}
+
+html[data-menu-style="split-nav"] .public-brand {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 1.1rem;
+}
+
+html[data-menu-style="split-nav"] .public-nav a.active {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 2px solid var(--gold);
+}
+
+html[data-hero-style="split"] .home-hero {
+  grid-template-columns: 1.1fr 0.9fr;
+  min-height: 56vh;
+}
+
+html[data-hero-style="split"] .home-hero__aside {
+  display: block;
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--accent) 70%, transparent), transparent),
+    repeating-linear-gradient(
+      -18deg,
+      color-mix(in srgb, #fff 8%, transparent),
+      color-mix(in srgb, #fff 8%, transparent) 2px,
+      transparent 2px,
+      transparent 14px
+    );
+}
+
+html[data-hero-style="dark"] .home-hero {
+  background: radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--gold) 25%, transparent), transparent 45%),
+    linear-gradient(160deg, #0c0f11, var(--surface));
+  color: var(--ink);
+  min-height: 58vh;
+}
+
+html[data-hero-style="light"] .home-hero {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 10%, var(--surface)), var(--surface));
+  color: var(--ink);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+html[data-hero-style="light"] .home-hero .btn-ghost {
+  border-color: var(--ink);
+}
+
+html[data-hero-style="cards"] .home-hero {
+  min-height: auto;
+  margin: 20px 20px 0;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--panel), var(--accent));
+}
+
+html[data-hero-style="fullbleed"] .home-hero {
+  min-height: 52vh;
+}
+
+html[data-tile-style="large-cards"] .home-tiles {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+html[data-tile-style="large-cards"] .home-tile {
+  min-height: 240px;
+  padding: 0;
+  gap: 0;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+html[data-tile-style="large-cards"] .home-tile > div {
+  padding: 16px;
+}
+
+html[data-tile-style="large-cards"] .home-tile img,
+html[data-tile-style="large-cards"] .home-tile__placeholder {
+  aspect-ratio: 16 / 11;
+  border-radius: 0;
+}
+
+html[data-tile-style="rows"] .home-tiles {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+html[data-tile-style="rows"] .home-tile {
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  min-height: 0;
+  padding: 10px;
+}
+
+html[data-tile-style="rows"] .home-tile img,
+html[data-tile-style="rows"] .home-tile__placeholder {
+  aspect-ratio: 1;
+}
+
+html[data-tile-style="masonry"] .home-tiles {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+html[data-tile-style="masonry"] .home-tile {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  min-height: 0;
+}
+
+html[data-tile-style="masonry"] .home-tile img,
+html[data-tile-style="masonry"] .home-tile__placeholder {
+  aspect-ratio: 3 / 4;
+}
+
+html[data-tile-style="masonry"] .home-tile strong {
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+
+html[data-template="heritage-dark"] .home-tile,
+html[data-template="heritage-dark"] .content-block--cta {
+  background: color-mix(in srgb, var(--panel) 80%, #1a1f22);
+  border-color: color-mix(in srgb, var(--gold) 25%, transparent);
+  color: var(--ink);
+}
+
+html[data-template="heritage-dark"] .home-tile span,
+html[data-template="heritage-dark"] .hint,
+html[data-template="heritage-dark"] .lead {
+  color: var(--muted);
+}
+
+html[data-template="gallery-minimal"] .home-menu {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+html[data-template="gallery-minimal"] .btn {
+  background: var(--ink);
+}
+
+html[data-template="science-split"] .btn {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.85rem;
 }
 
 @media (max-width: 1100px) {
