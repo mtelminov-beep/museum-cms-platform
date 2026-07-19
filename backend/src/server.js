@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { handleAdminLogin } from "./auth.js";
 import { CMS_CATALOG_KEYS, isCmsCatalogKey } from "./catalogKeys.js";
 import { cmsGate } from "./cmsSecurity.js";
+import { createEntity } from "./entities.js";
 import {
   getCatalog,
   listCatalogs,
@@ -16,6 +17,7 @@ import {
   readState,
   writeState
 } from "./store.js";
+import { createV1Router } from "./v1Router.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
@@ -47,6 +49,8 @@ app.get("/api/health", (req, res) => {
 });
 
 app.post("/api/auth/admin-login", handleAdminLogin);
+
+app.use("/api/v1", createV1Router());
 
 app.get("/api/cms/state", async (req, res, next) => {
   try {

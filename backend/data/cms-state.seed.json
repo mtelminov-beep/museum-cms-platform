@@ -1,4 +1,16 @@
 {
+  "tenant": {
+    "id": "tenant-demo",
+    "name": "Демо-музей",
+    "timezone": "Europe/Moscow",
+    "plan": "mvp",
+    "locale": "ru",
+    "brand": {
+      "accent": "#2f6f73",
+      "surface": "#f8f5ef",
+      "ink": "#202124"
+    }
+  },
   "museum": {
     "name": "Museum CMS",
     "tagline": "Единая оболочка для музея, экранов и интерактивных панелей",
@@ -10,8 +22,124 @@
   },
   "settings": {
     "defaultLocale": "ru",
-    "kioskMode": false
+    "kioskMode": false,
+    "accessibility": {
+      "lowVision": true,
+      "textScale": true
+    }
   },
+  "users": [
+    {
+      "id": "user-admin",
+      "login": "admin",
+      "role": "admin",
+      "displayName": "Администратор"
+    }
+  ],
+  "entities": {
+    "branches": [
+      {
+        "id": "branch-main",
+        "tenantId": "tenant-demo",
+        "title": "Главное здание",
+        "address": "г. Пример, ул. Музейная, 1",
+        "status": "published"
+      }
+    ],
+    "halls": [
+      {
+        "id": "hall-1",
+        "tenantId": "tenant-demo",
+        "branchId": "branch-main",
+        "title": "Зал №1",
+        "floor": "1",
+        "order": 1,
+        "status": "published"
+      }
+    ],
+    "exhibitions": [
+      {
+        "id": "exh-demo",
+        "tenantId": "tenant-demo",
+        "title": "Демонстрационная выставка",
+        "type": "permanent",
+        "summary": "Шаблон выставки без реального музейного контента.",
+        "hallIds": ["hall-1"],
+        "exhibitIds": ["exhibit-demo"],
+        "coverImage": "",
+        "status": "published"
+      }
+    ],
+    "exhibits": [
+      {
+        "id": "exhibit-demo",
+        "tenantId": "tenant-demo",
+        "inventoryNumber": "DEMO-001",
+        "title": "Демо-экспонат",
+        "summary": "Карточка-заполнитель для конструктора и каналов публикации.",
+        "description": "<p>Опишите экспонат в админке. Данные переиспользуются на сайте, в гиде и на киоске.</p>",
+        "hallId": "hall-1",
+        "exhibitionIds": ["exh-demo"],
+        "mediaIds": [],
+        "tags": ["демо"],
+        "status": "published"
+      }
+    ],
+    "persons": [],
+    "events": [
+      {
+        "id": "event-demo",
+        "tenantId": "tenant-demo",
+        "title": "Демо-событие",
+        "startsAt": "2026-08-01T12:00:00.000Z",
+        "location": "Зал №1",
+        "summary": "Пример афиши.",
+        "status": "published"
+      }
+    ],
+    "articles": [],
+    "routes": [
+      {
+        "id": "route-demo",
+        "tenantId": "tenant-demo",
+        "title": "Короткий маршрут",
+        "durationMin": 20,
+        "audience": "семьи",
+        "pointIds": ["exhibit-demo"],
+        "status": "draft"
+      }
+    ],
+    "mediaAssets": [],
+    "qrCodes": [
+      {
+        "id": "qr-demo",
+        "tenantId": "tenant-demo",
+        "publicId": "qdemo01",
+        "label": "Демо QR на экспонат",
+        "targetType": "exhibit",
+        "targetId": "exhibit-demo",
+        "status": "published"
+      }
+    ],
+    "devices": [
+      {
+        "id": "touch-main",
+        "tenantId": "tenant-demo",
+        "name": "Тач-панель входной зоны",
+        "type": "kiosk",
+        "pairingCode": "MUSEUM1",
+        "route": "/display/touch-main",
+        "playlistId": "welcome-loop",
+        "online": false,
+        "status": "published"
+      }
+    ],
+    "playlists": [],
+    "scenes": [],
+    "assignments": []
+  },
+  "auditLog": [],
+  "pageRevisions": {},
   "kioskCatalogs": {
     "cms-welcome-v1": {
       "payload": {
