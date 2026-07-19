@@ -203,18 +203,23 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     try {
       const local = preferLocal ? loadDraft(key) : null;
       if (local != null) {
-        setDraft(local);
-        if (key === "cms-pages-v1") setPagesDraft(local as CmsPage[]);
+        const payload = key === "cms-pages-v1" ? mergeSitePages(local as CmsPage[]) : local;
+        setDraft(payload);
+        if (key === "cms-pages-v1") setPagesDraft(payload as CmsPage[]);
         setStatus("Загружен локальный черновик");
       } else {
         const remote = await fetchCatalog(key);
-        const payload = remote.payload ?? catalogDefaults[key];
+        let payload = remote.payload ?? catalogDefaults[key];
+        if (key === "cms-pages-v1") payload = mergeSitePages(payload as CmsPage[]);
         setDraft(payload);
         if (key === "cms-pages-v1") setPagesDraft(payload as CmsPage[]);
         setStatus(remote.updatedAt ? `С сервера: ${remote.updatedAt}` : "Значения по умолчанию");
       }
     } catch (err) {
-      const fallback = catalogDefaults[key];
+      const fallback =
+        key === "cms-pages-v1"
+          ? mergeSitePages(catalogDefaults[key] as CmsPage[])
+          : catalogDefaults[key];
       setDraft(fallback);
       if (key === "cms-pages-v1") setPagesDraft(fallback as CmsPage[]);
       setStatus(err instanceof Error ? err.message : "Ошибка загрузки");
