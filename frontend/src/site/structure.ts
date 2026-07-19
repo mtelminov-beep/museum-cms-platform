@@ -111,7 +111,7 @@ export function navFromSiteStructure() {
 }
 
 export function pagesFromSiteStructure() {
-  return SITE_SECTIONS.filter((s) => s.route.startsWith("/page/")).map((section) => ({
+  return SITE_SECTIONS.map((section) => ({
     id: section.id,
     slug: section.id,
     title: section.label,
@@ -126,13 +126,15 @@ export function pagesFromSiteStructure() {
         title: section.label,
         text: `<p>${section.description}</p>`,
         src: "",
-        caption: ""
+        caption: "",
+        buttonLabel: "Подробнее",
+        href: section.route
       },
       {
         id: `text-${section.id}`,
         type: "text" as const,
         title: "Содержание",
-        text: "<p>Добавьте блоки и материалы в визуальном редакторе (вкладка «Страницы»).</p>",
+        text: "<p>Откройте админку → <strong>Сайт</strong>, добавьте блоки и загрузите материалы раздела.</p>",
         src: "",
         caption: ""
       }
