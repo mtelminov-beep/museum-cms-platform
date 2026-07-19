@@ -310,16 +310,18 @@ function VisualBlocksWorkspace({
 
 export function VisualPageEditor({
   page,
-  onChange
+  onChange,
+  onOpenPages
 }: {
   page: CmsPage;
   onChange: (next: CmsPage) => void;
+  onOpenPages?: () => void;
 }) {
   const [mode, setMode] = useState<"visual" | "subsections" | "meta">("visual");
   const subsections = useMemo(() => page.subsections ?? [], [page.subsections]);
 
   return (
-    <div className="visual-page-editor">
+    <div className={`visual-page-editor${mode === "visual" ? " visual-page-editor--focus" : ""}`}>
       <div className="vpe-modes">
         <button type="button" className={mode === "visual" ? "active" : ""} onClick={() => setMode("visual")}>
           Визуальный конструктор
@@ -372,7 +374,7 @@ export function VisualPageEditor({
         </div>
       ) : null}
 
-      {mode === "visual" ? <TildaPageEditor page={page} onChange={onChange} /> : null}
+      {mode === "visual" ? <TildaPageEditor page={page} onChange={onChange} onOpenPages={onOpenPages} /> : null}
 
       {mode === "subsections" ? (
         <SubsectionsEditor
@@ -394,97 +396,113 @@ export function PagesCatalogEditor({
   const list = Array.isArray(items) ? items : [];
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(list[0]?.id);
+  const [catalogOpen, setCatalogOpen] = useState(!list[0]?.id);
   const filtered = list.filter((item) => {
     const q = query.trim().toLowerCase();
     if (!q) return true;
     return [item.title, item.id, item.slug, item.summary].join(" ").toLowerCase().includes(q);
   });
   const selected = list.find((item) => item.id === selectedId) ?? null;
+  const focusMode = Boolean(selected && !catalogOpen);
 
   return (
-    <div className="array-editor pages-catalog-editor">
-      <aside className="array-editor__list">
-        <div className="admin-section-head">
-          <strong>Страницы</strong>
-          <div className="admin-actions">
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              onClick={() => {
-                const seeded = pagesFromSiteStructure() as CmsPage[];
-                const byId = new Map(list.map((p) => [p.id, p]));
-                for (const page of seeded) {
-                  if (!byId.has(page.id)) byId.set(page.id, page);
-                }
-                onChange([...byId.values()]);
-                setSelectedId(seeded[0]?.id || list[0]?.id);
-              }}
-            >
-              Структура сайта
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              onClick={() => {
-                const page: CmsPage = {
-                  id: makeId("page"),
-                  slug: `page-${Date.now().toString(36)}`,
-                  title: "Новая страница",
-                  summary: "",
-                  status: "draft",
-                  sectionFolder: "uploads",
-                  materials: [],
-                  blocks: [],
-                  subsections: []
-                };
-                onChange([...list, page]);
-                setSelectedId(page.id);
-              }}
-            >
-              + Страница
-            </button>
+    <div className={`array-editor pages-catalog-editor${focusMode ? " pages-catalog-editor--focus" : ""}`}>
+      {!focusMode ? (
+        <aside className="array-editor__list">
+          <div className="admin-section-head">
+            <strong>Страницы</strong>
+            <div className="admin-actions">
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  const seeded = pagesFromSiteStructure() as CmsPage[];
+                  const byId = new Map(list.map((p) => [p.id, p]));
+                  for (const page of seeded) {
+                    if (!byId.has(page.id)) byId.set(page.id, page);
+                  }
+                  onChange([...byId.values()]);
+                  setSelectedId(seeded[0]?.id || list[0]?.id);
+                }}
+              >
+                Структура сайта
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  const page: CmsPage = {
+                    id: makeId("page"),
+                    slug: `page-${Date.now().toString(36)}`,
+                    title: "Новая страница",
+                    summary: "",
+                    status: "draft",
+                    sectionFolder: "uploads",
+                    materials: [],
+                    blocks: [],
+                    subsections: []
+                  };
+                  onChange([...list, page]);
+                  setSelectedId(page.id);
+                  setCatalogOpen(false);
+                }}
+              >
+                + Страница
+              </button>
+            </div>
           </div>
-        </div>
-        <label className="admin-field">
-          <span>Поиск</span>
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="название, slug…" />
-        </label>
-        {filtered.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={item.id === selectedId ? "array-editor__item active" : "array-editor__item"}
-            onClick={() => setSelectedId(item.id)}
-          >
-            <strong>{item.title}</strong>
-            <small>
-              {item.status} · {item.blocks?.length || 0} блоков
-            </small>
-          </button>
-        ))}
-      </aside>
+          <label className="admin-field">
+            <span>Поиск</span>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="название, slug…" />
+          </label>
+          {filtered.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={item.id === selectedId ? "array-editor__item active" : "array-editor__item"}
+              onClick={() => {
+                setSelectedId(item.id);
+                setCatalogOpen(false);
+              }}
+            >
+              <strong>{item.title}</strong>
+              <small>
+                {item.status} · {item.blocks?.length || 0} блоков
+              </small>
+            </button>
+          ))}
+        </aside>
+      ) : null}
       <div className="array-editor__detail">
         {!selected ? (
           <p className="hint">Выберите или создайте страницу</p>
         ) : (
           <>
-            <div className="admin-section-head">
-              <strong>{selected.title}</strong>
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => {
-                  if (!window.confirm(`Удалить страницу «${selected.title}»?`)) return;
-                  const next = list.filter((item) => item.id !== selected.id);
-                  onChange(next);
-                  setSelectedId(next[0]?.id);
-                }}
-              >
-                Удалить
-              </button>
-            </div>
+            {!focusMode ? (
+              <div className="admin-section-head">
+                <strong>{selected.title}</strong>
+                <div className="admin-actions">
+                  <button type="button" className="btn btn-sm" onClick={() => setCatalogOpen(false)}>
+                    Открыть конструктор
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => {
+                      if (!window.confirm(`Удалить страницу «${selected.title}»?`)) return;
+                      const next = list.filter((item) => item.id !== selected.id);
+                      onChange(next);
+                      setSelectedId(next[0]?.id);
+                    }}
+                  >
+                    Удалить
+                  </button>
+                </div>
+              </div>
+            ) : null}
             <VisualPageEditor
               page={selected}
+              onOpenPages={() => setCatalogOpen(true)}
               onChange={(page) => onChange(list.map((item) => (item.id === selected.id ? page : item)))}
             />
           </>
