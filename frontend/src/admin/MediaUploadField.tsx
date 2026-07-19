@@ -74,7 +74,7 @@ export function MediaUploadField({
             type="text"
             value={multiple ? "" : single}
             placeholder={multiple ? "URL добавляется загрузкой" : "/exhibits/... или внешний URL"}
-            onChange={(e) => (!multiple ? onChange(e.target.value) : undefined)}
+            onChange={(e) => (!multiple ? onChange?.(e.target.value) : undefined)}
             disabled={multiple}
           />
           <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => inputRef.current?.click()}>
@@ -115,7 +115,7 @@ export function MediaUploadField({
             <video src={single} controls preload="metadata" />
           ) : null}
           {isAudio(single) ? <audio src={single} controls /> : null}
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => onChange("")}>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => onChange?.("")}>
             Удалить
           </button>
         </div>
@@ -129,7 +129,7 @@ export function MediaUploadField({
               <button
                 type="button"
                 className="btn btn-ghost btn-sm"
-                onClick={() => onChange(urls.filter((_, i) => i !== index))}
+                onClick={() => onChangeMultiple?.(urls.filter((_, i) => i !== index))}
               >
                 Удалить
               </button>

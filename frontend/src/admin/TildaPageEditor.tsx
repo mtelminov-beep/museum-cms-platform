@@ -422,7 +422,7 @@ export function TildaPageEditor({
                   folder={folder}
                   multiple
                   value={selected.items || []}
-                  onChange={(items) => updateSelected({ items: items as string[] })}
+                  onChangeMultiple={(items) => updateSelected({ items })}
                 />
               ) : null}
               {["cta", "ticket", "qr", "hero"].includes(selected.type) ? (

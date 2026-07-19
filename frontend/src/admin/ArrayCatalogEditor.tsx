@@ -171,6 +171,7 @@ export function ArrayCatalogEditor<T extends { id: string; title?: string }>({
                         label={field.label}
                         value={String(raw ?? "")}
                         onChange={(url) => updateSelected({ [field.key]: url } as Partial<T>)}
+                        folder="uploads"
                       />
                     </div>
                   );
