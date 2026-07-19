@@ -48,6 +48,8 @@ export function PosterHubPage() {
 }
 
 export function ExhibitsListPage() {
+  const { getCatalog } = useCatalogs();
+  const page = (getCatalog<CmsPage[]>("cms-pages-v1") || []).find((p) => p.id === "exhibits" || p.slug === "exhibits");
   const [items, setItems] = useState<Array<Record<string, unknown>>>([]);
 
   useEffect(() => {
@@ -60,7 +62,9 @@ export function ExhibitsListPage() {
   return (
     <PublicLayout>
       <main className="content-page">
-        <h1>Экспонаты</h1>
+        <h1>{page?.title || "Экспонаты"}</h1>
+        {page?.summary ? <p className="lead">{page.summary}</p> : null}
+        <ContentBlocks blocks={page?.blocks} />
         <div className="page-links">
           {items.map((item) => (
             <Link key={String(item.id)} className="page-link-card" to={`/exhibits/${item.id}`}>
@@ -75,12 +79,15 @@ export function ExhibitsListPage() {
 }
 
 export function QrScannerPage() {
+  const { getCatalog } = useCatalogs();
+  const page = (getCatalog<CmsPage[]>("cms-pages-v1") || []).find((p) => p.id === "qr" || p.slug === "qr");
   const [code, setCode] = useState("");
   return (
     <PublicLayout>
       <main className="content-page">
-        <h1>QR-сканер</h1>
-        <p className="lead">Введите код с этикетки или откройте ссылку вида /q/…</p>
+        <h1>{page?.title || "QR-сканер"}</h1>
+        {page?.summary ? <p className="lead">{page.summary}</p> : <p className="lead">Введите код с этикетки или откройте ссылку вида /q/…</p>}
+        <ContentBlocks blocks={page?.blocks} />
         <label className="admin-field">
           <span>Код / publicId</span>
           <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="qdemo01" />

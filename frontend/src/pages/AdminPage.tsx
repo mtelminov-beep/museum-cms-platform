@@ -8,10 +8,10 @@ import {
 import { ENTITY_NAV, EntityCollectionEditor, type EntityCollection } from "../admin/EntityCollectionEditor";
 import { HomeEditor } from "../admin/HomeEditor";
 import { NavigationEditor } from "../admin/NavigationEditor";
+import { SiteBuilderAdmin } from "../admin/SiteBuilderAdmin";
 import { TemplatesAdmin } from "../admin/TemplatesAdmin";
 import { PagesCatalogEditor } from "../admin/VisualPageEditor";
 import { WelcomeEditor } from "../admin/WelcomeEditor";
-import { navFromSiteStructure } from "../site/structure";
 import { clearAdminSession, getAdminSession, setAdminSession } from "../adminAuth";
 import {
   adminLogin,
@@ -25,6 +25,7 @@ import {
 } from "../api";
 import { CMS_CATALOG_KEYS, sectionLabels } from "../cmsConfig";
 import { catalogDefaults } from "../data/defaults";
+import { navFromSiteStructure, pagesFromSiteStructure } from "../site/structure";
 import { useCatalogs } from "../stores/CatalogContext";
 import { AndroidPage } from "./AndroidPage";
 import { DisplayPage } from "./DisplayPage";
@@ -40,7 +41,7 @@ import type {
   WelcomeScreenConfig
 } from "../types";
 
-type AdminTab = "content" | "entities" | "templates" | "screens" | "display" | "android";
+type AdminTab = "site" | "templates" | "catalogs" | "entities" | "screens" | "display" | "android";
 
 const DRAFT_PREFIX = "museum-cms-draft:";
 
@@ -86,7 +87,7 @@ function AdminLoginForm({ onSuccess }: { onSuccess: () => void }) {
         }}
       >
         <h1>Админ-панель</h1>
-        <p>Управление контентом Museum CMS. По умолчанию: admin / admin</p>
+        <p>После входа откроется визуальный конструктор сайта. Логин: admin / admin</p>
         <label className="admin-field">
           <span>Логин</span>
           <input value={login} onChange={(e) => setLogin(e.target.value)} autoComplete="username" />
@@ -180,10 +181,14 @@ function CatalogWorkspace({
 
 function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const { refresh } = useCatalogs();
-  const [tab, setTab] = useState<AdminTab>("content");
-  const [section, setSection] = useState<CmsCatalogKey>("cms-welcome-v1");
+  const [tab, setTab] = useState<AdminTab>("site");
+  const [section, setSection] = useState<CmsCatalogKey>("cms-pages-v1");
   const [entityCollection, setEntityCollection] = useState<EntityCollection>("exhibitions");
-  const [draft, setDraft] = useState<unknown>(catalogDefaults["cms-welcome-v1"]);
+  const [pagesDraft, setPagesDraft] = useState<CmsPage[]>(() => {
+    const local = loadDraft("cms-pages-v1");
+    return (local as CmsPage[]) || (catalogDefaults["cms-pages-v1"] as CmsPage[]);
+  });
+  const [draft, setDraft] = useState<unknown>(catalogDefaults["cms-pages-v1"]);
   const [jsonText, setJsonText] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -199,14 +204,19 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       const local = preferLocal ? loadDraft(key) : null;
       if (local != null) {
         setDraft(local);
+        if (key === "cms-pages-v1") setPagesDraft(local as CmsPage[]);
         setStatus("Загружен локальный черновик");
       } else {
         const remote = await fetchCatalog(key);
-        setDraft(remote.payload ?? catalogDefaults[key]);
+        const payload = remote.payload ?? catalogDefaults[key];
+        setDraft(payload);
+        if (key === "cms-pages-v1") setPagesDraft(payload as CmsPage[]);
         setStatus(remote.updatedAt ? `С сервера: ${remote.updatedAt}` : "Значения по умолчанию");
       }
     } catch (err) {
-      setDraft(catalogDefaults[key]);
+      const fallback = catalogDefaults[key];
+      setDraft(fallback);
+      if (key === "cms-pages-v1") setPagesDraft(fallback as CmsPage[]);
       setStatus(err instanceof Error ? err.message : "Ошибка загрузки");
     } finally {
       setBusy(false);
@@ -218,6 +228,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     const next = catalogDefaults[section];
     setDraft(next);
     saveDraft(section, next);
+    if (section === "cms-pages-v1") setPagesDraft(next as CmsPage[]);
     setStatus("Сброшено к defaults");
   };
 
@@ -227,18 +238,12 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     setStatus(result.ok ? `Сервер OK · ${result.time ?? ""}` : `Сервер недоступен · ${result.error ?? ""}`);
   };
 
-  const publishToServer = async () => {
+  const publishCatalog = async (key: CmsCatalogKey, payload: unknown) => {
     setBusy(true);
     try {
-      const result = await putCatalog(section, draft);
-      if (section !== "cms-navigation-v1") {
-        const navDraft = loadDraft("cms-navigation-v1");
-        if (navDraft != null) {
-          await putCatalog("cms-navigation-v1", navDraft);
-        }
-      }
-      localStorage.removeItem(DRAFT_PREFIX + section);
-      broadcastCatalogUpdate(section);
+      const result = await putCatalog(key, payload);
+      localStorage.removeItem(DRAFT_PREFIX + key);
+      broadcastCatalogUpdate(key);
       await refresh();
       setStatus(`Опубликовано: ${result.updatedAt}`);
     } catch (err) {
@@ -248,10 +253,47 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     }
   };
 
+  const publishSite = async () => {
+    setBusy(true);
+    try {
+      const pages = pagesDraft.length ? pagesDraft : (pagesFromSiteStructure() as CmsPage[]);
+      const nav = {
+        items: [{ id: "home", label: "Главная", route: "/museum", published: true }, ...navFromSiteStructure()]
+      };
+      const pagesResult = await putCatalog("cms-pages-v1", pages);
+      await putCatalog("cms-navigation-v1", nav);
+      localStorage.removeItem(DRAFT_PREFIX + "cms-pages-v1");
+      localStorage.removeItem(DRAFT_PREFIX + "cms-navigation-v1");
+      saveDraft("cms-pages-v1", pages);
+      broadcastCatalogUpdate("cms-pages-v1");
+      broadcastCatalogUpdate("cms-navigation-v1");
+      await refresh();
+      setStatus(`Сайт опубликован: ${pagesResult.updatedAt}`);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Ошибка публикации сайта");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const publishToServer = async () => {
+    await publishCatalog(section, draft);
+    if (section !== "cms-navigation-v1") {
+      const navDraft = loadDraft("cms-navigation-v1");
+      if (navDraft != null) {
+        await putCatalog("cms-navigation-v1", navDraft);
+      }
+    }
+  };
+
   useEffect(() => {
-    void loadSection(section);
+    void loadSection("cms-pages-v1");
     void checkServer();
-  }, [section]);
+  }, []);
+
+  useEffect(() => {
+    if (tab === "catalogs") void loadSection(section);
+  }, [section, tab]);
 
   useEffect(() => {
     setJsonText(JSON.stringify(draft, null, 2));
@@ -269,8 +311,10 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     return serverOk ? "сервер online" : "сервер offline";
   }, [serverOk]);
 
+  const catalogKeys = CMS_CATALOG_KEYS.filter((key) => key !== "cms-pages-v1");
+
   return (
-    <div className="admin-app">
+    <div className={`admin-app${tab === "site" ? " admin-app--site" : ""}`}>
       <aside className="admin-shell">
         <div className="brand">
           <div className="brand-mark">CMS</div>
@@ -287,9 +331,10 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         <nav className="admin-tabs">
           {(
             [
-              ["content", "Страницы"],
-              ["entities", "Контент"],
+              ["site", "Сайт · редактор"],
               ["templates", "Шаблоны"],
+              ["catalogs", "Экраны"],
+              ["entities", "Данные"],
               ["screens", "Носители"],
               ["display", "Display"],
               ["android", "Android"]
@@ -301,9 +346,9 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
           ))}
         </nav>
 
-        {tab === "content" ? (
+        {tab === "catalogs" ? (
           <nav className="admin-sections">
-            {CMS_CATALOG_KEYS.map((key) => (
+            {catalogKeys.map((key) => (
               <button
                 key={key}
                 type="button"
@@ -313,6 +358,13 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 {sectionLabels[key]}
               </button>
             ))}
+            <button
+              type="button"
+              className={section === "cms-pages-v1" ? "active" : ""}
+              onClick={() => setSection("cms-pages-v1")}
+            >
+              Все страницы (список)
+            </button>
           </nav>
         ) : null}
 
@@ -348,7 +400,23 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       </aside>
 
       <div className="admin-main">
-        {tab === "content" ? (
+        {tab === "site" ? (
+          <SiteBuilderAdmin
+            pages={pagesDraft}
+            busy={busy}
+            status={status}
+            onPublish={() => void publishSite()}
+            onChange={(next) => {
+              setPagesDraft(next);
+              setDraft(next);
+              saveDraft("cms-pages-v1", next);
+            }}
+          />
+        ) : null}
+
+        {tab === "templates" ? <TemplatesAdmin /> : null}
+
+        {tab === "catalogs" ? (
           <>
             <header className="admin-main__head">
               <div>
@@ -384,6 +452,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
               setDraft={(value) => {
                 setDraft(value);
                 saveDraft(section, value);
+                if (section === "cms-pages-v1") setPagesDraft(value as CmsPage[]);
               }}
             />
 
@@ -405,6 +474,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                       const parsed = JSON.parse(jsonText);
                       setDraft(parsed);
                       saveDraft(section, parsed);
+                      if (section === "cms-pages-v1") setPagesDraft(parsed as CmsPage[]);
                       setJsonError(null);
                       setStatus("JSON применён к черновику");
                     } catch (err) {
@@ -423,15 +493,13 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
           <>
             <header className="admin-main__head">
               <div>
-                <h1>Модель контента MuseumOS</h1>
-                <p className="hint">Выставки, экспонаты, залы, QR и устройства — одна запись, несколько каналов.</p>
+                <h1>Данные музея</h1>
+                <p className="hint">Выставки, экспонаты, залы, QR и устройства. Страницы сайта редактируются во вкладке «Сайт · редактор».</p>
               </div>
             </header>
             <EntityCollectionEditor collection={entityCollection} />
           </>
         ) : null}
-
-        {tab === "templates" ? <TemplatesAdmin /> : null}
 
         {tab === "screens" && museumState ? <ScreensPage state={museumState} /> : null}
         {tab === "display" && museumState ? <DisplayPage state={museumState} /> : null}
