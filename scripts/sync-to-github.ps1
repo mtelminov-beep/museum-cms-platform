@@ -18,11 +18,11 @@ function Build-RussianCommitMessage {
   $hasHooks = @($Files | Where-Object { $_ -match '^\.cursor/|^scripts/' }).Count -gt 0
 
   $parts = @()
-  if ($hasAdmin) { $parts += "админку и редакторы контента" }
+  if ($hasAdmin) { $parts += "админка и редакторы контента" }
   if ($hasBackend) { $parts += "API бэкенда" }
   if ($hasFrontend -and -not $hasAdmin) { $parts += "публичный фронтенд" }
-  if ($hasDocs) { $parts += "документацию" }
-  if ($hasHooks) { $parts += "автосинхронизацию с GitHub" }
+  if ($hasDocs) { $parts += "документация" }
+  if ($hasHooks) { $parts += "автосинхронизация с GitHub" }
   if (-not $parts.Count) { $parts = @("файлы проекта") }
 
   $unique = @()

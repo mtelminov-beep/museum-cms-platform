@@ -1,11 +1,9 @@
-# Фоновый watcher: при изменении файлов — дебаунс и push на GitHub.
-
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 $SyncScript = Join-Path $PSScriptRoot "sync-to-github.ps1"
 Set-Location $Root
 
-Write-Host "Автосинхронизация GitHub запущена для: $Root"
+Write-Host ("Автосинхронизация GitHub запущена для: {0}" -f $Root)
 Write-Host "Остановка: Ctrl+C"
 Write-Host "Отключение: `$env:MUSEUM_CMS_AUTOSYNC='0'"
 
@@ -37,7 +35,7 @@ while ($true) {
       try {
         & powershell -NoProfile -ExecutionPolicy Bypass -File $SyncScript -Reason watch
       } catch {
-        Write-Host "Ошибка синхронизации: $($_.Exception.Message)"
+        Write-Host ("Ошибка синхронизации: {0}" -f $_.Exception.Message)
       }
     }
   }
