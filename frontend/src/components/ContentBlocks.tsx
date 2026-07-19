@@ -33,8 +33,8 @@ export function BlockView({
           <p className="hint">Короткое описание для посетителя</p>
         ) : null}
         {block.buttonLabel ? (
-          block.href ? (
-            <Link className="btn" to={block.href} onClick={(e) => e.preventDefault()}>
+          block.href && !showEmpty ? (
+            <Link className="btn" to={block.href}>
               {block.buttonLabel}
             </Link>
           ) : (
@@ -128,8 +128,8 @@ export function BlockView({
         {block.title ? <h3>{block.title}</h3> : showEmpty ? <h3>Кнопка действия</h3> : null}
         {block.text ? <div className="rich-html" dangerouslySetInnerHTML={{ __html: block.text }} /> : null}
         {block.buttonLabel ? (
-          block.href ? (
-            <Link className="btn" to={block.href} onClick={(e) => e.preventDefault()}>
+          block.href && !showEmpty ? (
+            <Link className="btn" to={block.href}>
               {block.buttonLabel}
             </Link>
           ) : (

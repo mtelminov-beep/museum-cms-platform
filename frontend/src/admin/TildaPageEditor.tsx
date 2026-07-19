@@ -538,7 +538,6 @@ export function TildaPageEditor({
               </label>
               <p className="hint">Изменения сразу видны на холсте — так же, как на публичной странице.</p>
             </aside>
-          </>
         ) : null}
       </div>
     </div>
