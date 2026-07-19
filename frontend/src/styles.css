@@ -3,12 +3,28 @@
   --surface: #f3efe6;
   --ink: #1d2426;
   --panel: #203336;
+  --muted: #667174;
   --gold: #d9b86f;
-  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --radius: 0px;
+  --font-display: "Literata", "Georgia", serif;
+  --font-body: "Manrope", "Segoe UI", sans-serif;
+  --header-height: 64px;
+  --letter-spacing: 0.04em;
+  font-family: var(--font-body);
   color: var(--ink);
   background: var(--surface);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+.public-brand,
+.home-hero h1,
+.start-institution,
+.start-zone h1 {
+  font-family: var(--font-display);
 }
 
 * {
@@ -107,17 +123,21 @@ select {
   justify-content: space-between;
   gap: 16px;
   align-items: center;
-  padding: 16px 28px;
-  background: rgba(32, 51, 54, 0.96);
+  min-height: var(--header-height);
+  padding: 12px 28px;
+  background: var(--panel);
   color: #f8f5ef;
 }
 
 .public-brand {
   font-weight: 700;
   text-decoration: none;
+  letter-spacing: var(--letter-spacing);
+  text-transform: uppercase;
+  font-size: 0.95rem;
 }
 
-.public-header nav {
+.public-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
@@ -138,6 +158,7 @@ select {
 .public-admin-link {
   border: 1px solid rgba(255, 255, 255, 0.35);
   padding: 6px 10px;
+  border-radius: var(--radius);
 }
 
 .start-page {

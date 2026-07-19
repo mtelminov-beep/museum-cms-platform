@@ -192,6 +192,7 @@ export interface MuseumState {
   settings?: {
     defaultLocale?: string;
     kioskMode?: boolean;
+    activeTemplateId?: string;
   };
   kioskCatalogs?: Record<string, { payload: unknown; updatedAt?: string; updated_at?: string }>;
   navigation?: Array<{ id: string; label: string; route: string }>;
