@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
+import { pagesFromSiteStructure } from "../site/structure";
 import type { CmsPage, ContentBlock, ContentBlockType, PageSubsection } from "../types";
 import { MediaUploadField } from "./MediaUploadField";
 import { PublishToggle } from "./PublishToggle";
 import { RichTextEditor } from "./RichTextEditor";
+import { TildaPageEditor } from "./TildaPageEditor";
 
 const BLOCK_TYPES: Array<{ value: ContentBlockType; label: string }> = [
   { value: "text", label: "Текст" },
@@ -370,18 +372,7 @@ export function VisualPageEditor({
         </div>
       ) : null}
 
-      {mode === "visual" ? (
-        <>
-          <header className="vpe-page-head">
-            <h2>{page.title || "Без названия"}</h2>
-            {page.summary ? <p>{page.summary}</p> : null}
-          </header>
-          <VisualBlocksWorkspace
-            blocks={page.blocks}
-            onChange={(blocks) => onChange({ ...page, blocks })}
-          />
-        </>
-      ) : null}
+      {mode === "visual" ? <TildaPageEditor page={page} onChange={onChange} /> : null}
 
       {mode === "subsections" ? (
         <SubsectionsEditor
