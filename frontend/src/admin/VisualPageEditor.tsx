@@ -475,37 +475,40 @@ export function PagesCatalogEditor({
       ) : null}
       <div className="array-editor__detail">
         {!selected ? (
-          <p className="hint">Выберите или создайте страницу</p>
+          <p className="hint">Выберите страницу слева или создайте новую — откроется визуальный конструктор.</p>
+        ) : focusMode ? (
+          <VisualPageEditor
+            page={selected}
+            onOpenPages={() => setCatalogOpen(true)}
+            onChange={(page) => onChange(list.map((item) => (item.id === selected.id ? page : item)))}
+          />
         ) : (
-          <>
-            {!focusMode ? (
-              <div className="admin-section-head">
-                <strong>{selected.title}</strong>
-                <div className="admin-actions">
-                  <button type="button" className="btn btn-sm" onClick={() => setCatalogOpen(false)}>
-                    Открыть конструктор
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => {
-                      if (!window.confirm(`Удалить страницу «${selected.title}»?`)) return;
-                      const next = list.filter((item) => item.id !== selected.id);
-                      onChange(next);
-                      setSelectedId(next[0]?.id);
-                    }}
-                  >
-                    Удалить
-                  </button>
-                </div>
+          <div className="pages-catalog-preview">
+            <div className="admin-section-head">
+              <strong>{selected.title}</strong>
+              <div className="admin-actions">
+                <button type="button" className="btn btn-sm" onClick={() => setCatalogOpen(false)}>
+                  Открыть конструктор
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => {
+                    if (!window.confirm(`Удалить страницу «${selected.title}»?`)) return;
+                    const next = list.filter((item) => item.id !== selected.id);
+                    onChange(next);
+                    setSelectedId(next[0]?.id);
+                  }}
+                >
+                  Удалить
+                </button>
               </div>
-            ) : null}
-            <VisualPageEditor
-              page={selected}
-              onOpenPages={() => setCatalogOpen(true)}
-              onChange={(page) => onChange(list.map((item) => (item.id === selected.id ? page : item)))}
-            />
-          </>
+            </div>
+            <p className="hint">
+              {selected.status} · {selected.blocks?.length || 0} блоков · /{selected.slug}
+            </p>
+            {selected.summary ? <p>{selected.summary}</p> : null}
+          </div>
         )}
       </div>
     </div>

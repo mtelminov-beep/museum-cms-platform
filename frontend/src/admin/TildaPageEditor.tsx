@@ -82,8 +82,8 @@ export function TildaPageEditor({
   const [breakpoint, setBreakpoint] = useState<Breakpoint>("desktop");
   const [selectedId, setSelectedId] = useState<string | undefined>(page.blocks?.[0]?.id);
   const [leftTab, setLeftTab] = useState<"blocks" | "media" | "materials">("blocks");
-  const [libraryOpen, setLibraryOpen] = useState(true);
-  const [propsOpen, setPropsOpen] = useState(true);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [propsOpen, setPropsOpen] = useState(Boolean(page.blocks?.[0]?.id));
   const [insertAt, setInsertAt] = useState<number | null>(null);
   const [library, setLibrary] = useState<Array<{ url: string; fileName: string }>>([]);
   const [undo, setUndo] = useState<CmsPage[]>([]);
@@ -468,8 +468,6 @@ export function TildaPageEditor({
         </main>
 
         {propsOpen && selected ? (
-          <>
-            <button type="button" className="tilda-backdrop tilda-backdrop--props" aria-label="Закрыть свойства" onClick={() => setPropsOpen(false)} />
             <aside className="tilda-drawer tilda-drawer--right" onClick={(e) => e.stopPropagation()}>
               <div className="admin-section-head">
                 <strong>Свойства · {blockLabel(selected.type)}</strong>
